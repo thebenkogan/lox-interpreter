@@ -24,6 +24,10 @@ const (
 	TokenTypeEqualEqual
 	TokenTypeBang
 	TokenTypeBangEqual
+	TokenTypeLess
+	TokenTypeLessEqual
+	TokenTypeGreater
+	TokenTypeGreaterEqual
 	TokenTypeUnknown
 )
 
@@ -71,6 +75,18 @@ func stringToType(s string, stream *bufio.Reader) (TokenType, string) {
 			return TokenTypeBangEqual, "!="
 		}
 		return TokenTypeBang, s
+	case "<":
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return TokenTypeLessEqual, "<="
+		}
+		return TokenTypeLess, s
+	case ">":
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return TokenTypeGreaterEqual, ">="
+		}
+		return TokenTypeGreater, s
 	default:
 		return TokenTypeUnknown, ""
 	}
@@ -110,6 +126,14 @@ func (t TokenType) String() string {
 		return "BANG"
 	case TokenTypeBangEqual:
 		return "BANG_EQUAL"
+	case TokenTypeLess:
+		return "LESS"
+	case TokenTypeLessEqual:
+		return "LESS_EQUAL"
+	case TokenTypeGreater:
+		return "GREATER"
+	case TokenTypeGreaterEqual:
+		return "GREATER_EQUAL"
 	default:
 		panic("Unknown token type")
 	}

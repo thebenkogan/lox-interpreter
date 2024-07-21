@@ -15,9 +15,23 @@ func TestLexer(t *testing.T) {
 		expectedErrors []TokenError
 	}{
 		{
-			name:     "single characters",
-			program:  "(){},.-+;*/=",
-			expected: []TokenType{TokenTypeLeftParen, TokenTypeRightParen, TokenTypeLeftBrace, TokenTypeRightBrace, TokenTypeComma, TokenTypeDot, TokenTypeMinus, TokenTypePlus, TokenTypeSemicolon, TokenTypeStar, TokenTypeSlash, TokenTypeEqual, TokenTypeEOF},
+			name:    "single characters",
+			program: "(){},.-+;*/=",
+			expected: []TokenType{
+				TokenTypeLeftParen,
+				TokenTypeRightParen,
+				TokenTypeLeftBrace,
+				TokenTypeRightBrace,
+				TokenTypeComma,
+				TokenTypeDot,
+				TokenTypeMinus,
+				TokenTypePlus,
+				TokenTypeSemicolon,
+				TokenTypeStar,
+				TokenTypeSlash,
+				TokenTypeEqual,
+				TokenTypeEOF,
+			},
 		},
 		{
 			name:     "single characters with errors",
@@ -38,6 +52,17 @@ func TestLexer(t *testing.T) {
 			name:     "negation and inequality",
 			program:  "!!===",
 			expected: []TokenType{TokenTypeBang, TokenTypeBangEqual, TokenTypeEqualEqual, TokenTypeEOF},
+		},
+		{
+			name:    "relational operators",
+			program: "<<=>>=",
+			expected: []TokenType{
+				TokenTypeLess,
+				TokenTypeLessEqual,
+				TokenTypeGreater,
+				TokenTypeGreaterEqual,
+				TokenTypeEOF,
+			},
 		},
 	}
 
