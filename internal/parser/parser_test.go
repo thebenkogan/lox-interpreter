@@ -28,6 +28,16 @@ func TestParser(t *testing.T) {
 			program:  "true",
 			expected: "true",
 		},
+		{
+			name:     "integer",
+			program:  "123",
+			expected: "123.0",
+		},
+		{
+			name:     "float",
+			program:  "123.23",
+			expected: "123.23",
+		},
 	}
 
 	for _, test := range tests {
