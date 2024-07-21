@@ -189,6 +189,11 @@ func TestParser(t *testing.T) {
 			program:     "-",
 			expectError: true,
 		},
+		{
+			name:     "all types",
+			program:  "((3.0 + 5.1) * 7) >= (-3.1 / -5.5) < (true != false) != \"hello world\" == nil",
+			expected: "(== (!= (< (>= (group (* (group (+ 3.0 5.1)) 7.0)) (group (/ (- 3.1) (- 5.5)))) (group (!= true false))) hello world) nil)",
+		},
 	}
 
 	for _, test := range tests {
