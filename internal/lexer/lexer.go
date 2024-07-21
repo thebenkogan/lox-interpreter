@@ -25,6 +25,7 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 		if char == '/' && peekNext(f) == '/' {
 			_, _ = f.ReadString('\n')
 			token = ""
+			line++
 			continue
 		}
 		if slices.Contains(errorRunes, char) {

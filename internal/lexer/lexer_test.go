@@ -66,8 +66,11 @@ func TestLexer(t *testing.T) {
 		},
 		{
 			name:     "comments",
-			program:  "// this is a comment\n==\n!// this is another comment\n=//last one",
+			program:  "// this is a comment\n==\n!%// this is another comment\n=//last one",
 			expected: []TokenType{TokenTypeEqualEqual, TokenTypeBang, TokenTypeEqual, TokenTypeEOF},
+			expectedErrors: []TokenError{
+				{line: 3, token: "%"},
+			},
 		},
 	}
 
