@@ -52,6 +52,10 @@ func (e *ExpressionBinary) String() string {
 		op = "<"
 	case BinaryOperatorLessEqual:
 		op = "<="
+	case BinaryOperatorEqual:
+		op = "=="
+	case BinaryOperatorNotEqual:
+		op = "!="
 	}
 	return fmt.Sprintf("(%s %s %s)", op, e.Left.String(), e.Right.String())
 }
