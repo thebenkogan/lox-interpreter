@@ -119,6 +119,16 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 		},
+		{
+			name:    "identifiers",
+			program: "foo bar baz",
+			expected: []TokenType{
+				TokenTypeIdentifier,
+				TokenTypeIdentifier,
+				TokenTypeIdentifier,
+				TokenTypeEOF,
+			},
+		},
 	}
 
 	for _, test := range tests {

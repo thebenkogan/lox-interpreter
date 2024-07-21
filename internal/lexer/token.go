@@ -32,6 +32,7 @@ const (
 	TokenTypeGreaterEqual
 	TokenTypeString
 	TokenTypeNumber
+	TokenTypeIdentifier
 	TokenTypeUnknown
 )
 
@@ -81,6 +82,8 @@ func (t TokenType) String() string {
 		return "STRING"
 	case TokenTypeNumber:
 		return "NUMBER"
+	case TokenTypeIdentifier:
+		return "IDENTIFIER"
 	default:
 		panic("Unknown token type")
 	}
@@ -166,6 +169,9 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 		if isDigit(s) {
 			return readNumber(s, stream)
 		}
+		if isAlpha(s) {
+			return readIdentifier(s, stream)
+		}
 		return &Token{Type: TokenTypeUnknown, Lexeme: string(s)}, nil
 	}
 }
@@ -203,6 +209,15 @@ func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
 	return &Token{Type: TokenTypeNumber, Lexeme: number, Literal: literal}, nil
 }
 
+func readIdentifier(s rune, stream *bufio.Reader) (*Token, error) {
+	ident := string(s)
+	for isAlphaNumeric(peekNext(stream)) {
+		ident += string(peekNext(stream))
+		_, _ = stream.Discard(1)
+	}
+	return &Token{Type: TokenTypeIdentifier, Lexeme: ident}, nil
+}
+
 func (t *Token) String() string {
 	switch t.Type {
 	case TokenTypeEOF:
@@ -231,4 +246,12 @@ func isWhitespace(r rune) bool {
 
 func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'
+}
+
+func isAlpha(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == '_'
+}
+
+func isAlphaNumeric(r rune) bool {
+	return isAlpha(r) || isDigit(r)
 }
