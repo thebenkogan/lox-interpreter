@@ -48,6 +48,10 @@ const (
 	BinaryOperatorDivide
 	BinaryOperatorAdd
 	BinaryOperatorSubtract
+	BinaryOperatorGreater
+	BinaryOperatorGreaterEqual
+	BinaryOperatorLess
+	BinaryOperatorLessEqual
 )
 
 type ExpressionBinary struct {
@@ -103,7 +107,35 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 }
 
 func (p *parser) expression() (Expression, error) {
-	return p.term()
+	return p.comparison()
+}
+
+// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+
+func (p *parser) comparison() (Expression, error) {
+	expr, err := p.term()
+	if err != nil {
+		return nil, err
+	}
+	for p.advanceMatch(lexer.TokenTypeGreater, lexer.TokenTypeGreaterEqual, lexer.TokenTypeLess, lexer.TokenTypeLessEqual) {
+		var operator BinaryOperator
+		switch p.previous().Type {
+		case lexer.TokenTypeGreater:
+			operator = BinaryOperatorGreater
+		case lexer.TokenTypeGreaterEqual:
+			operator = BinaryOperatorGreaterEqual
+		case lexer.TokenTypeLess:
+			operator = BinaryOperatorLess
+		case lexer.TokenTypeLessEqual:
+			operator = BinaryOperatorLessEqual
+		}
+		right, err := p.factor()
+		if err != nil {
+			return nil, err
+		}
+		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+	}
+	return expr, nil
 }
 
 // term           → factor ( ( "-" | "+" ) factor )* ;

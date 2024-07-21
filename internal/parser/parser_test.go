@@ -99,6 +99,26 @@ func TestParser(t *testing.T) {
 			program:  "3 + 5 - 9",
 			expected: "(- (+ 3.0 5.0) 9.0)",
 		},
+		{
+			name:     "greater",
+			program:  "3 > 5",
+			expected: "(> 3.0 5.0)",
+		},
+		{
+			name:     "greater equal",
+			program:  "3 >= 5",
+			expected: "(>= 3.0 5.0)",
+		},
+		{
+			name:     "less",
+			program:  "3 < 5",
+			expected: "(< 3.0 5.0)",
+		},
+		{
+			name:     "less equal",
+			program:  "3 <= 5",
+			expected: "(<= 3.0 5.0)",
+		},
 	}
 
 	for _, test := range tests {

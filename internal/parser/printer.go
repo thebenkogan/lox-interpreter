@@ -34,16 +34,24 @@ func (e *ExpressionUnary) String() string {
 }
 
 func (e *ExpressionBinary) String() string {
-	var op rune
+	var op string
 	switch e.Operator {
 	case BinaryOperatorMultiply:
-		op = '*'
+		op = "*"
 	case BinaryOperatorDivide:
-		op = '/'
+		op = "/"
 	case BinaryOperatorAdd:
-		op = '+'
+		op = "+"
 	case BinaryOperatorSubtract:
-		op = '-'
+		op = "-"
+	case BinaryOperatorGreater:
+		op = ">"
+	case BinaryOperatorGreaterEqual:
+		op = ">="
+	case BinaryOperatorLess:
+		op = "<"
+	case BinaryOperatorLessEqual:
+		op = "<="
 	}
-	return fmt.Sprintf("(%c %s %s)", op, e.Left.String(), e.Right.String())
+	return fmt.Sprintf("(%s %s %s)", op, e.Left.String(), e.Right.String())
 }
