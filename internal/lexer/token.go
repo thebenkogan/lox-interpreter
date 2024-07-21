@@ -138,25 +138,25 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 		return &Token{Type: TokenTypeSlash, Lexeme: string(s)}, nil
 	case '=':
 		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
+			_, _ = stream.Discard(1)
 			return &Token{Type: TokenTypeEqualEqual, Lexeme: "=="}, nil
 		}
 		return &Token{Type: TokenTypeEqual, Lexeme: string(s)}, nil
 	case '!':
 		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
+			_, _ = stream.Discard(1)
 			return &Token{Type: TokenTypeBangEqual, Lexeme: "!="}, nil
 		}
 		return &Token{Type: TokenTypeBang, Lexeme: string(s)}, nil
 	case '<':
 		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
+			_, _ = stream.Discard(1)
 			return &Token{Type: TokenTypeLessEqual, Lexeme: "<="}, nil
 		}
 		return &Token{Type: TokenTypeLess, Lexeme: string(s)}, nil
 	case '>':
 		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
+			_, _ = stream.Discard(1)
 			return &Token{Type: TokenTypeGreaterEqual, Lexeme: ">="}, nil
 		}
 		return &Token{Type: TokenTypeGreater, Lexeme: string(s)}, nil
@@ -183,16 +183,16 @@ func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
 	number := string(s)
 	for isDigit(peekNext(stream)) {
 		number += string(peekNext(stream))
-		_, _ = stream.ReadByte()
+		_, _ = stream.Discard(1)
 	}
 	if peekNext(stream) == '.' {
 		nextTwo, _ := stream.Peek(2)
 		if len(nextTwo) == 2 && isDigit(rune(nextTwo[1])) {
-			_, _ = stream.Discard(2)
+			_, _ = stream.Discard(1)
 			number += "."
 			for isDigit(peekNext(stream)) {
 				number += string(peekNext(stream))
-				_, _ = stream.ReadByte()
+				_, _ = stream.Discard(1)
 			}
 		}
 	}
