@@ -16,8 +16,8 @@ func Tokenize(file io.Reader) []Token {
 			break
 		}
 		token += string(char)
-		tokenType := typeFromString(token)
-		if tokenType == TokenTypeUnknown {
+		tokenType, found := stringToType[token]
+		if !found {
 			continue
 		}
 		tokens = append(tokens, Token{Type: tokenType, Lexeme: token})

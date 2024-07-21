@@ -10,22 +10,27 @@ const (
 	TokenTypeRightParen
 	TokenTypeLeftBrace
 	TokenTypeRightBrace
-	TokenTypeUnknown
+	TokenTypeComma
+	TokenTypeDot
+	TokenTypeMinus
+	TokenTypePlus
+	TokenTypeSemicolon
+	TokenTypeStar
+	TokenTypeSlash
 )
 
-func typeFromString(s string) TokenType {
-	switch s {
-	case "(":
-		return TokenTypeLeftParen
-	case ")":
-		return TokenTypeRightParen
-	case "{":
-		return TokenTypeLeftBrace
-	case "}":
-		return TokenTypeRightBrace
-	default:
-		return TokenTypeUnknown
-	}
+var stringToType = map[string]TokenType{
+	"(": TokenTypeLeftParen,
+	")": TokenTypeRightParen,
+	"{": TokenTypeLeftBrace,
+	"}": TokenTypeRightBrace,
+	",": TokenTypeComma,
+	".": TokenTypeDot,
+	"-": TokenTypeMinus,
+	"+": TokenTypePlus,
+	";": TokenTypeSemicolon,
+	"*": TokenTypeStar,
+	"/": TokenTypeSlash,
 }
 
 func (t TokenType) String() string {
@@ -40,6 +45,20 @@ func (t TokenType) String() string {
 		return "LEFT_BRACE"
 	case TokenTypeRightBrace:
 		return "RIGHT_BRACE"
+	case TokenTypeComma:
+		return "COMMA"
+	case TokenTypeDot:
+		return "DOT"
+	case TokenTypeMinus:
+		return "MINUS"
+	case TokenTypePlus:
+		return "PLUS"
+	case TokenTypeSemicolon:
+		return "SEMICOLON"
+	case TokenTypeStar:
+		return "STAR"
+	case TokenTypeSlash:
+		return "SLASH"
 	default:
 		panic("Unknown token type")
 	}
