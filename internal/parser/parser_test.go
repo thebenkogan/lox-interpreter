@@ -54,6 +54,21 @@ func TestParser(t *testing.T) {
 			program:       "(\"hello\"",
 			expectedError: "Unmatched parentheses.",
 		},
+		{
+			name:          "empty parentheses",
+			program:       "()",
+			expectedError: "Expected expression after '('",
+		},
+		{
+			name:     "unary bang",
+			program:  "!true",
+			expected: "(! true)",
+		},
+		{
+			name:     "unary minus",
+			program:  "-3",
+			expected: "(- 3.0)",
+		},
 	}
 
 	for _, test := range tests {
