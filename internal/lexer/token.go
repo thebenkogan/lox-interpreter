@@ -168,3 +168,7 @@ var errorRunes = []rune{'@', '#', '^', '$', '%'}
 func (te *TokenError) String() string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %s", te.line, te.token)
 }
+
+func isWhitespace(r rune) bool {
+	return r == ' ' || r == '\t'
+}

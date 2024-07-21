@@ -18,6 +18,9 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 			tokens = append(tokens, Token{Type: TokenTypeEOF})
 			break
 		}
+		if isWhitespace(char) {
+			continue
+		}
 		if char == '\n' {
 			line++
 			continue

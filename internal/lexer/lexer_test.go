@@ -72,6 +72,17 @@ func TestLexer(t *testing.T) {
 				{line: 3, token: "%"},
 			},
 		},
+		{
+			name:    "whitespace",
+			program: "( \t    )  \t  !\n   \t !=",
+			expected: []TokenType{
+				TokenTypeLeftParen,
+				TokenTypeRightParen,
+				TokenTypeBang,
+				TokenTypeBangEqual,
+				TokenTypeEOF,
+			},
+		},
 	}
 
 	for _, test := range tests {
