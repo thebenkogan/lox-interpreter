@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/codecrafters-io/interpreter-starter-go/internal/evaluator"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
 )
 
@@ -17,52 +18,7 @@ import (
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")" ;
 
-type Expression interface {
-	String() string
-}
-
-type ExpressionLiteral struct {
-	Literal any // number, string, bool, nil
-}
-
-type ExpressionGroup struct {
-	Child Expression
-}
-
-type UnaryOperator int
-
-const (
-	UnaryOperatorBang UnaryOperator = iota
-	UnaryOperatorMinus
-)
-
-type ExpressionUnary struct {
-	Operator UnaryOperator
-	Child    Expression
-}
-
-type BinaryOperator int
-
-const (
-	BinaryOperatorMultiply BinaryOperator = iota
-	BinaryOperatorDivide
-	BinaryOperatorAdd
-	BinaryOperatorSubtract
-	BinaryOperatorGreater
-	BinaryOperatorGreaterEqual
-	BinaryOperatorLess
-	BinaryOperatorLessEqual
-	BinaryOperatorEqual
-	BinaryOperatorNotEqual
-)
-
-type ExpressionBinary struct {
-	Operator BinaryOperator
-	Left     Expression
-	Right    Expression
-}
-
-func Parse(tokens []lexer.Token) (Expression, error) {
+func Parse(tokens []lexer.Token) (evaluator.Expression, error) {
 	p := &parser{tokens: tokens}
 	return p.expression()
 }
@@ -108,97 +64,97 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 	return false
 }
 
-func (p *parser) expression() (Expression, error) {
+func (p *parser) expression() (evaluator.Expression, error) {
 	return p.equality()
 }
 
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 
-func (p *parser) equality() (Expression, error) {
+func (p *parser) equality() (evaluator.Expression, error) {
 	expr, err := p.comparison()
 	if err != nil {
 		return nil, err
 	}
 	for p.advanceMatch(lexer.TokenTypeBangEqual, lexer.TokenTypeEqualEqual) {
-		operator := BinaryOperatorEqual
+		operator := evaluator.BinaryOperatorEqual
 		if p.previous().Type == lexer.TokenTypeBangEqual {
-			operator = BinaryOperatorNotEqual
+			operator = evaluator.BinaryOperatorNotEqual
 		}
 		right, err := p.factor()
 		if err != nil {
 			return nil, err
 		}
-		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
 }
 
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 
-func (p *parser) comparison() (Expression, error) {
+func (p *parser) comparison() (evaluator.Expression, error) {
 	expr, err := p.term()
 	if err != nil {
 		return nil, err
 	}
 	for p.advanceMatch(lexer.TokenTypeGreater, lexer.TokenTypeGreaterEqual, lexer.TokenTypeLess, lexer.TokenTypeLessEqual) {
-		var operator BinaryOperator
+		var operator evaluator.BinaryOperator
 		switch p.previous().Type {
 		case lexer.TokenTypeGreater:
-			operator = BinaryOperatorGreater
+			operator = evaluator.BinaryOperatorGreater
 		case lexer.TokenTypeGreaterEqual:
-			operator = BinaryOperatorGreaterEqual
+			operator = evaluator.BinaryOperatorGreaterEqual
 		case lexer.TokenTypeLess:
-			operator = BinaryOperatorLess
+			operator = evaluator.BinaryOperatorLess
 		case lexer.TokenTypeLessEqual:
-			operator = BinaryOperatorLessEqual
+			operator = evaluator.BinaryOperatorLessEqual
 		}
 		right, err := p.factor()
 		if err != nil {
 			return nil, err
 		}
-		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
 }
 
 // term           → factor ( ( "-" | "+" ) factor )* ;
 
-func (p *parser) term() (Expression, error) {
+func (p *parser) term() (evaluator.Expression, error) {
 	expr, err := p.factor()
 	if err != nil {
 		return nil, err
 	}
 	for p.advanceMatch(lexer.TokenTypeMinus, lexer.TokenTypePlus) {
-		operator := BinaryOperatorAdd
+		operator := evaluator.BinaryOperatorAdd
 		if p.previous().Type == lexer.TokenTypeMinus {
-			operator = BinaryOperatorSubtract
+			operator = evaluator.BinaryOperatorSubtract
 		}
 		right, err := p.factor()
 		if err != nil {
 			return nil, err
 		}
-		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
 }
 
 // factor         → unary ( ( "/" | "*" ) unary )* ;
 
-func (p *parser) factor() (Expression, error) {
+func (p *parser) factor() (evaluator.Expression, error) {
 	expr, err := p.unary()
 	if err != nil {
 		return nil, err
 	}
 	for p.advanceMatch(lexer.TokenTypeSlash, lexer.TokenTypeStar) {
-		operator := BinaryOperatorMultiply
+		operator := evaluator.BinaryOperatorMultiply
 		if p.previous().Type == lexer.TokenTypeSlash {
-			operator = BinaryOperatorDivide
+			operator = evaluator.BinaryOperatorDivide
 		}
 		right, err := p.unary()
 		if err != nil {
 			return nil, err
 		}
-		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
 }
@@ -206,17 +162,17 @@ func (p *parser) factor() (Expression, error) {
 // unary          → ( "!" | "-" ) unary
 //                | primary ;
 
-func (p *parser) unary() (Expression, error) {
+func (p *parser) unary() (evaluator.Expression, error) {
 	if p.advanceMatch(lexer.TokenTypeMinus, lexer.TokenTypeBang) {
-		operator := UnaryOperatorBang
+		operator := evaluator.UnaryOperatorBang
 		if p.previous().Type == lexer.TokenTypeMinus {
-			operator = UnaryOperatorMinus
+			operator = evaluator.UnaryOperatorMinus
 		}
 		child, err := p.unary()
 		if err != nil {
 			return nil, err
 		}
-		return &ExpressionUnary{Operator: operator, Child: child}, nil
+		return &evaluator.ExpressionUnary{Operator: operator, Child: child}, nil
 	}
 	return p.primary()
 }
@@ -224,19 +180,19 @@ func (p *parser) unary() (Expression, error) {
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")" ;
 
-func (p *parser) primary() (Expression, error) {
+func (p *parser) primary() (evaluator.Expression, error) {
 	switch {
 	case p.advanceMatch(lexer.TokenTypeFalse):
-		return &ExpressionLiteral{Literal: false}, nil
+		return &evaluator.ExpressionLiteral{Literal: false}, nil
 	case p.advanceMatch(lexer.TokenTypeTrue):
-		return &ExpressionLiteral{Literal: true}, nil
+		return &evaluator.ExpressionLiteral{Literal: true}, nil
 	case p.advanceMatch(lexer.TokenTypeNil):
-		return &ExpressionLiteral{Literal: nil}, nil
+		return &evaluator.ExpressionLiteral{Literal: nil}, nil
 	case p.advanceMatch(lexer.TokenTypeNumber):
 		n, _ := strconv.ParseFloat(p.previous().Literal, 64)
-		return &ExpressionLiteral{Literal: n}, nil
+		return &evaluator.ExpressionLiteral{Literal: n}, nil
 	case p.advanceMatch(lexer.TokenTypeString):
-		return &ExpressionLiteral{Literal: p.previous().Literal}, nil
+		return &evaluator.ExpressionLiteral{Literal: p.previous().Literal}, nil
 	case p.advanceMatch(lexer.TokenTypeLeftParen):
 		expr, err := p.expression()
 		if err != nil {
@@ -248,7 +204,7 @@ func (p *parser) primary() (Expression, error) {
 		if !p.advanceMatch(lexer.TokenTypeRightParen) {
 			return nil, errors.New("Unmatched parentheses.")
 		}
-		return &ExpressionGroup{Child: expr}, nil
+		return &evaluator.ExpressionGroup{Child: expr}, nil
 	}
 	return nil, errors.New("Expected expression.")
 }
