@@ -206,6 +206,9 @@ func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
 	if !strings.Contains(number, ".") {
 		literal += ".0"
 	}
+	for strings.HasSuffix(literal, "00") {
+		literal = strings.TrimSuffix(literal, "0")
+	}
 	return &Token{Type: TokenTypeNumber, Lexeme: number, Literal: literal}, nil
 }
 
