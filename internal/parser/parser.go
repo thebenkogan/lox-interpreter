@@ -98,10 +98,13 @@ func (p *parser) primary() (*Expression, error) {
 		if err != nil {
 			return nil, err
 		}
+		if expr == nil {
+			return nil, errors.New("Expected expression after '('")
+		}
 		if !p.advanceMatch(lexer.TokenTypeRightParen) {
 			return nil, errors.New("Unmatched parentheses.")
 		}
 		return &Expression{Type: ExpressionTypeGroup, Children: []Expression{*expr}}, nil
 	}
-	panic("TODO")
+	return nil, nil
 }
