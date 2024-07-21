@@ -32,3 +32,13 @@ func (e *ExpressionUnary) String() string {
 	}
 	panic("Unknown unary operator")
 }
+
+func (e *ExpressionBinary) String() string {
+	switch e.Operator {
+	case BinaryOperatorMultiply:
+		return fmt.Sprintf("(* %s %s)", e.Left.String(), e.Right.String())
+	case BinaryOperatorDivide:
+		return fmt.Sprintf("(/ %s %s)", e.Left.String(), e.Right.String())
+	}
+	panic("Unknown binary operator")
+}

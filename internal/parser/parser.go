@@ -41,6 +41,19 @@ type ExpressionUnary struct {
 	Child    Expression
 }
 
+type BinaryOperator int
+
+const (
+	BinaryOperatorMultiply BinaryOperator = iota
+	BinaryOperatorDivide
+)
+
+type ExpressionBinary struct {
+	Operator BinaryOperator
+	Left     Expression
+	Right    Expression
+}
+
 func Parse(tokens []lexer.Token) (Expression, error) {
 	p := &parser{tokens: tokens}
 	return p.expression()
@@ -88,8 +101,32 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 }
 
 func (p *parser) expression() (Expression, error) {
-	return p.unary()
+	return p.factor()
 }
+
+// factor         → unary ( ( "/" | "*" ) unary )* ;
+
+func (p *parser) factor() (Expression, error) {
+	expr, err := p.unary()
+	if err != nil {
+		return nil, err
+	}
+	for p.advanceMatch(lexer.TokenTypeSlash, lexer.TokenTypeStar) {
+		operator := BinaryOperatorMultiply
+		if p.previous().Type == lexer.TokenTypeSlash {
+			operator = BinaryOperatorDivide
+		}
+		right, err := p.unary()
+		if err != nil {
+			return nil, err
+		}
+		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+	}
+	return expr, nil
+}
+
+// unary          → ( "!" | "-" ) unary
+//                | primary ;
 
 func (p *parser) unary() (Expression, error) {
 	if p.advanceMatch(lexer.TokenTypeMinus, lexer.TokenTypeBang) {
@@ -105,6 +142,9 @@ func (p *parser) unary() (Expression, error) {
 	}
 	return p.primary()
 }
+
+// primary        → NUMBER | STRING | "true" | "false" | "nil"
+//                | "(" expression ")" ;
 
 func (p *parser) primary() (Expression, error) {
 	switch {
