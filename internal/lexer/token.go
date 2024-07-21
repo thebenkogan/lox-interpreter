@@ -88,7 +88,7 @@ type TokenError struct {
 	token string
 }
 
-var errorRunes = []rune{'@', '#', '^', '$'}
+var errorRunes = []rune{'@', '#', '^', '$', '%'}
 
 func (te *TokenError) String() string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %s", te.line, te.token)
