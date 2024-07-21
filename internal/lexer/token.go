@@ -181,17 +181,20 @@ func readString(_ rune, stream *bufio.Reader) (*Token, error) {
 
 func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
 	number := string(s)
-	for {
-		next := peekNext(stream)
-		if isDigit(next) || next == '.' {
-			number += string(next)
-			_, _ = stream.ReadByte()
-		} else {
-			break
-		}
+	for isDigit(peekNext(stream)) {
+		number += string(peekNext(stream))
+		_, _ = stream.ReadByte()
 	}
-	if strings.HasSuffix(number, ".") {
-		return nil, errors.New("Unexpected character.")
+	if peekNext(stream) == '.' {
+		nextTwo, _ := stream.Peek(2)
+		if len(nextTwo) == 2 && isDigit(rune(nextTwo[1])) {
+			_, _ = stream.Discard(2)
+			number += "."
+			for isDigit(peekNext(stream)) {
+				number += string(peekNext(stream))
+				_, _ = stream.ReadByte()
+			}
+		}
 	}
 	return &Token{Type: TokenTypeNumber, Lexeme: number, Literal: number}, nil
 }

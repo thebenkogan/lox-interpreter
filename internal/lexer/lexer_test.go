@@ -98,19 +98,25 @@ func TestLexer(t *testing.T) {
 		},
 		{
 			name:    "numbers",
-			program: "1234 1234.5 . 1.234 12.34\n.1234\n1234.",
+			program: "1234 1234.5 . 1.234 12.34\n.1234\n1234.\n1234.1234.1234.",
 			expected: []TokenType{
 				TokenTypeNumber,
 				TokenTypeNumber,
 				TokenTypeDot,
 				TokenTypeNumber,
 				TokenTypeNumber,
+
 				TokenTypeDot,
 				TokenTypeNumber,
+
+				TokenTypeNumber,
+				TokenTypeDot,
+
+				TokenTypeNumber,
+				TokenTypeDot,
+				TokenTypeNumber,
+				TokenTypeDot,
 				TokenTypeEOF,
-			},
-			expectedErrors: []TokenError{
-				{line: 3, msg: "Unexpected character."},
 			},
 		},
 	}
