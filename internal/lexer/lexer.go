@@ -18,13 +18,17 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 			tokens = append(tokens, Token{Type: TokenTypeEOF})
 			break
 		}
+		if char == '\n' {
+			line++
+			continue
+		}
 		if slices.Contains(errorRunes, char) {
 			errors = append(errors, TokenError{line: line, token: string(char)})
 			continue
 		}
 		token += string(char)
-		tokenType, found := stringToType[token]
-		if !found {
+		tokenType := stringToType(token, f)
+		if tokenType == TokenTypeUnknown {
 			continue
 		}
 		tokens = append(tokens, Token{Type: tokenType, Lexeme: token})

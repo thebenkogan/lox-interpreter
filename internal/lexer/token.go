@@ -1,6 +1,9 @@
 package lexer
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+)
 
 type TokenType int
 
@@ -19,22 +22,44 @@ const (
 	TokenTypeSlash
 	TokenTypeEqual
 	TokenTypeEqualEqual
+	TokenTypeUnknown
 )
 
-var stringToType = map[string]TokenType{
-	"(":  TokenTypeLeftParen,
-	")":  TokenTypeRightParen,
-	"{":  TokenTypeLeftBrace,
-	"}":  TokenTypeRightBrace,
-	",":  TokenTypeComma,
-	".":  TokenTypeDot,
-	"-":  TokenTypeMinus,
-	"+":  TokenTypePlus,
-	";":  TokenTypeSemicolon,
-	"*":  TokenTypeStar,
-	"/":  TokenTypeSlash,
-	"=":  TokenTypeEqual,
-	"==": TokenTypeEqualEqual,
+func stringToType(s string, stream *bufio.Reader) TokenType {
+	switch s {
+	case "(":
+		return TokenTypeLeftParen
+	case ")":
+		return TokenTypeRightParen
+	case "{":
+		return TokenTypeLeftBrace
+	case "}":
+		return TokenTypeRightBrace
+	case ",":
+		return TokenTypeComma
+	case ".":
+		return TokenTypeDot
+	case "-":
+		return TokenTypeMinus
+	case "+":
+		return TokenTypePlus
+	case ";":
+		return TokenTypeSemicolon
+	case "*":
+		return TokenTypeStar
+	case "/":
+		return TokenTypeSlash
+	case "=":
+		next, _ := stream.Peek(1)
+		nextRune := rune(next[0])
+		if nextRune == '=' {
+			_, _ = stream.ReadByte()
+			return TokenTypeEqualEqual
+		}
+		return TokenTypeEqual
+	default:
+		return TokenTypeUnknown
+	}
 }
 
 func (t TokenType) String() string {
