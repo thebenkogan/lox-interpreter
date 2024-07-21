@@ -51,8 +51,7 @@ func stringToType(s string, stream *bufio.Reader) TokenType {
 		return TokenTypeSlash
 	case "=":
 		next, _ := stream.Peek(1)
-		nextRune := rune(next[0])
-		if nextRune == '=' {
+		if len(next) > 0 && next[0] == '=' {
 			_, _ = stream.ReadByte()
 			return TokenTypeEqualEqual
 		}
