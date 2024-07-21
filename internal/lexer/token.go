@@ -17,20 +17,24 @@ const (
 	TokenTypeSemicolon
 	TokenTypeStar
 	TokenTypeSlash
+	TokenTypeEqual
+	TokenTypeEqualEqual
 )
 
 var stringToType = map[string]TokenType{
-	"(": TokenTypeLeftParen,
-	")": TokenTypeRightParen,
-	"{": TokenTypeLeftBrace,
-	"}": TokenTypeRightBrace,
-	",": TokenTypeComma,
-	".": TokenTypeDot,
-	"-": TokenTypeMinus,
-	"+": TokenTypePlus,
-	";": TokenTypeSemicolon,
-	"*": TokenTypeStar,
-	"/": TokenTypeSlash,
+	"(":  TokenTypeLeftParen,
+	")":  TokenTypeRightParen,
+	"{":  TokenTypeLeftBrace,
+	"}":  TokenTypeRightBrace,
+	",":  TokenTypeComma,
+	".":  TokenTypeDot,
+	"-":  TokenTypeMinus,
+	"+":  TokenTypePlus,
+	";":  TokenTypeSemicolon,
+	"*":  TokenTypeStar,
+	"/":  TokenTypeSlash,
+	"=":  TokenTypeEqual,
+	"==": TokenTypeEqualEqual,
 }
 
 func (t TokenType) String() string {
@@ -59,6 +63,10 @@ func (t TokenType) String() string {
 		return "STAR"
 	case TokenTypeSlash:
 		return "SLASH"
+	case TokenTypeEqual:
+		return "EQUAL"
+	case TokenTypeEqualEqual:
+		return "EQUAL_EQUAL"
 	default:
 		panic("Unknown token type")
 	}
