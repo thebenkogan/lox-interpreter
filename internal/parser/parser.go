@@ -88,5 +88,8 @@ func (p *parser) primary() Expression {
 		n, _ := strconv.ParseFloat(p.previous().Literal, 64)
 		return Expression{Type: ExpressionTypeLiteral, Literal: n}
 	}
+	if p.advanceMatch(lexer.TokenTypeString) {
+		return Expression{Type: ExpressionTypeLiteral, Literal: p.previous().Literal}
+	}
 	panic("TODO")
 }

@@ -38,6 +38,11 @@ func TestParser(t *testing.T) {
 			program:  "123.23",
 			expected: "123.23",
 		},
+		{
+			name:     "string",
+			program:  "\"hello\"",
+			expected: "hello",
+		},
 	}
 
 	for _, test := range tests {
