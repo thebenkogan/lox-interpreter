@@ -107,6 +107,8 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 		fallthrough
 	case '$':
 		fallthrough
+	case '&':
+		fallthrough
 	case '%':
 		return nil, errors.New(string(s))
 	case '(':
