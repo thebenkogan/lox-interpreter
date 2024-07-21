@@ -8,6 +8,8 @@ const (
 	TokenTypeEOF TokenType = iota
 	TokenTypeLeftParen
 	TokenTypeRightParen
+	TokenTypeLeftBrace
+	TokenTypeRightBrace
 	TokenTypeUnknown
 )
 
@@ -17,6 +19,10 @@ func typeFromString(s string) TokenType {
 		return TokenTypeLeftParen
 	case ")":
 		return TokenTypeRightParen
+	case "{":
+		return TokenTypeLeftBrace
+	case "}":
+		return TokenTypeRightBrace
 	default:
 		return TokenTypeUnknown
 	}
@@ -30,6 +36,10 @@ func (t TokenType) String() string {
 		return "LEFT_PAREN"
 	case TokenTypeRightParen:
 		return "RIGHT_PAREN"
+	case TokenTypeLeftBrace:
+		return "LEFT_BRACE"
+	case TokenTypeRightBrace:
+		return "RIGHT_BRACE"
 	default:
 		panic("Unknown token type")
 	}
