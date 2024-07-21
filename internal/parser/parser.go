@@ -128,6 +128,9 @@ func (p *parser) equality() (Expression, error) {
 		if err != nil {
 			return nil, err
 		}
+		if right == nil {
+			return nil, errors.New("Expected expression after '==' or '!='")
+		}
 		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
@@ -156,6 +159,9 @@ func (p *parser) comparison() (Expression, error) {
 		if err != nil {
 			return nil, err
 		}
+		if right == nil {
+			return nil, errors.New("Expected expression after '>' or '>=' or '<' or '<='")
+		}
 		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
@@ -176,6 +182,9 @@ func (p *parser) term() (Expression, error) {
 		right, err := p.factor()
 		if err != nil {
 			return nil, err
+		}
+		if right == nil {
+			return nil, errors.New("Expected expression after '-' or '+'")
 		}
 		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
@@ -198,6 +207,9 @@ func (p *parser) factor() (Expression, error) {
 		if err != nil {
 			return nil, err
 		}
+		if right == nil {
+			return nil, errors.New("Expected expression after '/' or '*'")
+		}
 		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
 	}
 	return expr, nil
@@ -215,6 +227,9 @@ func (p *parser) unary() (Expression, error) {
 		child, err := p.unary()
 		if err != nil {
 			return nil, err
+		}
+		if child == nil {
+			return nil, errors.New("Expected expression after '-' or '!'")
 		}
 		return &ExpressionUnary{Operator: operator, Child: child}, nil
 	}

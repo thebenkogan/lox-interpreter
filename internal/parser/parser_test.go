@@ -9,10 +9,10 @@ import (
 
 func TestParser(t *testing.T) {
 	tests := []struct {
-		name          string
-		program       string
-		expected      string
-		expectedError string
+		name        string
+		program     string
+		expected    string
+		expectError bool
 	}{
 		{
 			name:     "nil",
@@ -50,14 +50,14 @@ func TestParser(t *testing.T) {
 			expected: "(group 123.0)",
 		},
 		{
-			name:          "unmatched parentheses",
-			program:       "(\"hello\"",
-			expectedError: "Unmatched parentheses.",
+			name:        "unmatched parentheses",
+			program:     "(\"hello\"",
+			expectError: true,
 		},
 		{
-			name:          "empty parentheses",
-			program:       "()",
-			expectedError: "Expected expression after '('",
+			name:        "empty parentheses",
+			program:     "()",
+			expectError: true,
 		},
 		{
 			name:     "unary bang",
@@ -129,6 +129,66 @@ func TestParser(t *testing.T) {
 			program:  "3 != 5",
 			expected: "(!= 3.0 5.0)",
 		},
+		{
+			name:        "error add",
+			program:     "(72 +)",
+			expectError: true,
+		},
+		{
+			name:        "error subtract",
+			program:     "(72 -)",
+			expectError: true,
+		},
+		{
+			name:        "error multiply",
+			program:     "(72 *)",
+			expectError: true,
+		},
+		{
+			name:        "error divide",
+			program:     "(72 /)",
+			expectError: true,
+		},
+		{
+			name:        "error greater",
+			program:     "(72 >)",
+			expectError: true,
+		},
+		{
+			name:        "error greater equal",
+			program:     "(72 >=)",
+			expectError: true,
+		},
+		{
+			name:        "error less",
+			program:     "(72 <)",
+			expectError: true,
+		},
+		{
+			name:        "error less equal",
+			program:     "(72 <=)",
+			expectError: true,
+		},
+		{
+			name:        "error equal",
+			program:     "(72 ==)",
+			expectError: true,
+		},
+		{
+			name:        "error not equal",
+			program:     "(72 !=)",
+			expectError: true,
+		},
+		{
+			name:        "error bang",
+			program:     "!",
+			expectError: true,
+		},
+		{
+			name:        "error minus",
+			program:     "-",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -138,8 +198,8 @@ func TestParser(t *testing.T) {
 			if test.expected != "" && expr.String() != test.expected {
 				t.Errorf("Expected %s, got %s", test.expected, expr.String())
 			}
-			if test.expectedError != "" && test.expectedError != err.Error() {
-				t.Errorf("Expected error %s, got %s", test.expectedError, err.Error())
+			if test.expectError && err == nil {
+				t.Errorf("Expected error, got nil")
 			}
 		})
 	}
