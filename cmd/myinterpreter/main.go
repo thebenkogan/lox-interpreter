@@ -3,36 +3,36 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
 )
 
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
-
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
+	if err := run(os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
 
-	command := os.Args[1]
-
-	if command != "tokenize" {
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
-		os.Exit(1)
+func run(args []string) error {
+	if len(args) < 3 {
+		return fmt.Errorf("Usage: ./your_program.sh tokenize <filename>")
 	}
 
-	// Uncomment this block to pass the first stage
-	//
-	// filename := os.Args[2]
-	// fileContents, err := os.ReadFile(filename)
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-	// 	os.Exit(1)
-	// }
-	//
-	// if len(fileContents) > 0 {
-	// 	panic("Scanner not implemented")
-	// } else {
-	// 	fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
-	// }
+	command := args[1]
+	switch command {
+	case "tokenize":
+		file, err := os.Open(args[2])
+		if err != nil {
+			return fmt.Errorf("Error opening file: %w", err)
+		}
+		tokens := lexer.Tokenize(file)
+		for _, token := range tokens {
+			fmt.Println(token.String())
+		}
+	default:
+		return fmt.Errorf("Unknown command: %s\n", command)
+	}
+
+	return nil
 }
