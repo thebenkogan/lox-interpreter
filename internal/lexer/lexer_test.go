@@ -64,6 +64,11 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 		},
+		{
+			name:     "comments",
+			program:  "// this is a comment\n==\n!// this is another comment\n=//last one",
+			expected: []TokenType{TokenTypeEqualEqual, TokenTypeBang, TokenTypeEqual, TokenTypeEOF},
+		},
 	}
 
 	for _, test := range tests {
