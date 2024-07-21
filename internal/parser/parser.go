@@ -46,6 +46,8 @@ type BinaryOperator int
 const (
 	BinaryOperatorMultiply BinaryOperator = iota
 	BinaryOperatorDivide
+	BinaryOperatorAdd
+	BinaryOperatorSubtract
 )
 
 type ExpressionBinary struct {
@@ -101,7 +103,28 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 }
 
 func (p *parser) expression() (Expression, error) {
-	return p.factor()
+	return p.term()
+}
+
+// term           → factor ( ( "-" | "+" ) factor )* ;
+
+func (p *parser) term() (Expression, error) {
+	expr, err := p.factor()
+	if err != nil {
+		return nil, err
+	}
+	for p.advanceMatch(lexer.TokenTypeMinus, lexer.TokenTypePlus) {
+		operator := BinaryOperatorAdd
+		if p.previous().Type == lexer.TokenTypeMinus {
+			operator = BinaryOperatorSubtract
+		}
+		right, err := p.factor()
+		if err != nil {
+			return nil, err
+		}
+		expr = &ExpressionBinary{Operator: operator, Left: expr, Right: right}
+	}
+	return expr, nil
 }
 
 // factor         → unary ( ( "/" | "*" ) unary )* ;

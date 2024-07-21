@@ -84,6 +84,21 @@ func TestParser(t *testing.T) {
 			program:  "16 * 38 / 58",
 			expected: "(/ (* 16.0 38.0) 58.0)",
 		},
+		{
+			name:     "add",
+			program:  "3 + 5",
+			expected: "(+ 3.0 5.0)",
+		},
+		{
+			name:     "subtract",
+			program:  "3 - 5",
+			expected: "(- 3.0 5.0)",
+		},
+		{
+			name:     "add and subtract",
+			program:  "3 + 5 - 9",
+			expected: "(- (+ 3.0 5.0) 9.0)",
+		},
 	}
 
 	for _, test := range tests {

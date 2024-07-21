@@ -34,11 +34,16 @@ func (e *ExpressionUnary) String() string {
 }
 
 func (e *ExpressionBinary) String() string {
+	var op rune
 	switch e.Operator {
 	case BinaryOperatorMultiply:
-		return fmt.Sprintf("(* %s %s)", e.Left.String(), e.Right.String())
+		op = '*'
 	case BinaryOperatorDivide:
-		return fmt.Sprintf("(/ %s %s)", e.Left.String(), e.Right.String())
+		op = '/'
+	case BinaryOperatorAdd:
+		op = '+'
+	case BinaryOperatorSubtract:
+		op = '-'
 	}
-	panic("Unknown binary operator")
+	return fmt.Sprintf("(%c %s %s)", op, e.Left.String(), e.Right.String())
 }
