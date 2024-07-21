@@ -19,6 +19,8 @@ func (e *Expression) String() string {
 			return strconv.FormatFloat(n, 'f', -1, 64)
 		}
 		return fmt.Sprintf("%v", e.Literal)
+	case ExpressionTypeGroup:
+		return fmt.Sprintf("(group %s)", e.Children[0].String())
 	default:
 		return "TODO"
 	}

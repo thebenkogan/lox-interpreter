@@ -9,9 +9,10 @@ import (
 
 func TestParser(t *testing.T) {
 	tests := []struct {
-		name     string
-		program  string
-		expected string
+		name          string
+		program       string
+		expected      string
+		expectedError string
 	}{
 		{
 			name:     "nil",
@@ -43,14 +44,27 @@ func TestParser(t *testing.T) {
 			program:  "\"hello\"",
 			expected: "hello",
 		},
+		{
+			name:     "parentheses",
+			program:  "(123)",
+			expected: "(group 123.0)",
+		},
+		{
+			name:          "unmatched parentheses",
+			program:       "(\"hello\"",
+			expectedError: "Unmatched parentheses.",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			tokens, _ := lexer.Tokenize(bytes.NewBuffer([]byte(test.program)))
-			expr := Parse(tokens)
-			if expr.String() != test.expected {
+			expr, err := Parse(tokens)
+			if test.expected != "" && expr.String() != test.expected {
 				t.Errorf("Expected %s, got %s", test.expected, expr.String())
+			}
+			if test.expectedError != "" && test.expectedError != err.Error() {
+				t.Errorf("Expected error %s, got %s", test.expectedError, err.Error())
 			}
 		})
 	}

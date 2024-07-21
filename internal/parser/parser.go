@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
@@ -20,6 +21,7 @@ type ExpressionType int
 
 const (
 	ExpressionTypeLiteral ExpressionType = iota
+	ExpressionTypeGroup
 )
 
 type Expression struct {
@@ -28,9 +30,9 @@ type Expression struct {
 	Children []Expression
 }
 
-func Parse(tokens []lexer.Token) Expression {
+func Parse(tokens []lexer.Token) (*Expression, error) {
 	p := &parser{tokens: tokens}
-	return p.primary()
+	return p.expression()
 }
 
 type parser struct {
@@ -74,22 +76,32 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 	return false
 }
 
-func (p *parser) primary() Expression {
-	if p.advanceMatch(lexer.TokenTypeFalse) {
-		return Expression{Type: ExpressionTypeLiteral, Literal: false}
-	}
-	if p.advanceMatch(lexer.TokenTypeTrue) {
-		return Expression{Type: ExpressionTypeLiteral, Literal: true}
-	}
-	if p.advanceMatch(lexer.TokenTypeNil) {
-		return Expression{Type: ExpressionTypeLiteral, Literal: nil}
-	}
-	if p.advanceMatch(lexer.TokenTypeNumber) {
+func (p *parser) expression() (*Expression, error) {
+	return p.primary()
+}
+
+func (p *parser) primary() (*Expression, error) {
+	switch {
+	case p.advanceMatch(lexer.TokenTypeFalse):
+		return &Expression{Type: ExpressionTypeLiteral, Literal: false}, nil
+	case p.advanceMatch(lexer.TokenTypeTrue):
+		return &Expression{Type: ExpressionTypeLiteral, Literal: true}, nil
+	case p.advanceMatch(lexer.TokenTypeNil):
+		return &Expression{Type: ExpressionTypeLiteral, Literal: nil}, nil
+	case p.advanceMatch(lexer.TokenTypeNumber):
 		n, _ := strconv.ParseFloat(p.previous().Literal, 64)
-		return Expression{Type: ExpressionTypeLiteral, Literal: n}
-	}
-	if p.advanceMatch(lexer.TokenTypeString) {
-		return Expression{Type: ExpressionTypeLiteral, Literal: p.previous().Literal}
+		return &Expression{Type: ExpressionTypeLiteral, Literal: n}, nil
+	case p.advanceMatch(lexer.TokenTypeString):
+		return &Expression{Type: ExpressionTypeLiteral, Literal: p.previous().Literal}, nil
+	case p.advanceMatch(lexer.TokenTypeLeftParen):
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		if !p.advanceMatch(lexer.TokenTypeRightParen) {
+			return nil, errors.New("Unmatched parentheses.")
+		}
+		return &Expression{Type: ExpressionTypeGroup, Children: []Expression{*expr}}, nil
 	}
 	panic("TODO")
 }

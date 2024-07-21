@@ -39,7 +39,11 @@ func run(args []string) error {
 			os.Exit(65)
 		}
 	case "parse":
-		expr := parser.Parse(tokens)
+		expr, err := parser.Parse(tokens)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+			os.Exit(65)
+		}
 		fmt.Println(expr.String())
 	default:
 		return fmt.Errorf("Unknown command: %s\n", command)
