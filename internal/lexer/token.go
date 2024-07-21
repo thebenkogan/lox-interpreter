@@ -25,39 +25,39 @@ const (
 	TokenTypeUnknown
 )
 
-func stringToType(s string, stream *bufio.Reader) TokenType {
+func stringToType(s string, stream *bufio.Reader) (TokenType, string) {
 	switch s {
 	case "(":
-		return TokenTypeLeftParen
+		return TokenTypeLeftParen, s
 	case ")":
-		return TokenTypeRightParen
+		return TokenTypeRightParen, s
 	case "{":
-		return TokenTypeLeftBrace
+		return TokenTypeLeftBrace, s
 	case "}":
-		return TokenTypeRightBrace
+		return TokenTypeRightBrace, s
 	case ",":
-		return TokenTypeComma
+		return TokenTypeComma, s
 	case ".":
-		return TokenTypeDot
+		return TokenTypeDot, s
 	case "-":
-		return TokenTypeMinus
+		return TokenTypeMinus, s
 	case "+":
-		return TokenTypePlus
+		return TokenTypePlus, s
 	case ";":
-		return TokenTypeSemicolon
+		return TokenTypeSemicolon, s
 	case "*":
-		return TokenTypeStar
+		return TokenTypeStar, s
 	case "/":
-		return TokenTypeSlash
+		return TokenTypeSlash, s
 	case "=":
 		next, _ := stream.Peek(1)
 		if len(next) > 0 && next[0] == '=' {
 			_, _ = stream.ReadByte()
-			return TokenTypeEqualEqual
+			return TokenTypeEqualEqual, "=="
 		}
-		return TokenTypeEqual
+		return TokenTypeEqual, s
 	default:
-		return TokenTypeUnknown
+		return TokenTypeUnknown, ""
 	}
 }
 

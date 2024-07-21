@@ -27,11 +27,11 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 			continue
 		}
 		token += string(char)
-		tokenType := stringToType(token, f)
+		tokenType, fullToken := stringToType(token, f)
 		if tokenType == TokenTypeUnknown {
 			continue
 		}
-		tokens = append(tokens, Token{Type: tokenType, Lexeme: token})
+		tokens = append(tokens, Token{Type: tokenType, Lexeme: fullToken})
 		token = ""
 	}
 	return tokens, errors
