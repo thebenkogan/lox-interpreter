@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"strconv"
+
 	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
 )
 
@@ -81,6 +83,10 @@ func (p *parser) primary() Expression {
 	}
 	if p.advanceMatch(lexer.TokenTypeNil) {
 		return Expression{Type: ExpressionTypeLiteral, Literal: nil}
+	}
+	if p.advanceMatch(lexer.TokenTypeNumber) {
+		n, _ := strconv.ParseFloat(p.previous().Literal, 64)
+		return Expression{Type: ExpressionTypeLiteral, Literal: n}
 	}
 	panic("TODO")
 }
