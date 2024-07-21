@@ -39,6 +39,12 @@ func run(args []string) error {
 			os.Exit(65)
 		}
 	case "parse":
+		if len(errors) > 0 {
+			for _, error := range errors {
+				fmt.Fprintln(os.Stderr, error.String())
+			}
+			os.Exit(65)
+		}
 		expr, err := parser.Parse(tokens)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
