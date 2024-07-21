@@ -82,3 +82,14 @@ func (t *Token) String() string {
 		return fmt.Sprintf("%s %s %s", t.Type.String(), t.Lexeme, literal)
 	}
 }
+
+type TokenError struct {
+	line  int
+	token string
+}
+
+var errorRunes = []rune{'@', '#', '^', '$'}
+
+func (te *TokenError) String() string {
+	return fmt.Sprintf("[line %d] Error: Unexpected character: %s", te.line, te.token)
+}

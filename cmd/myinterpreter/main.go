@@ -26,9 +26,15 @@ func run(args []string) error {
 		if err != nil {
 			return fmt.Errorf("Error opening file: %w", err)
 		}
-		tokens := lexer.Tokenize(file)
+		tokens, errors := lexer.Tokenize(file)
 		for _, token := range tokens {
 			fmt.Println(token.String())
+		}
+		if len(errors) > 0 {
+			for _, error := range errors {
+				fmt.Fprintln(os.Stderr, error.String())
+			}
+			os.Exit(65)
 		}
 	default:
 		return fmt.Errorf("Unknown command: %s\n", command)
