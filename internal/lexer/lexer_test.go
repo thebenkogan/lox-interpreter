@@ -129,6 +129,30 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 		},
+		{
+			name:    "reserved words",
+			program: "and class else false for fun if nil or print return super this true var while while_a_variable",
+			expected: []TokenType{
+				TokenTypeAnd,
+				TokenTypeClass,
+				TokenTypeElse,
+				TokenTypeFalse,
+				TokenTypeFor,
+				TokenTypeFun,
+				TokenTypeIf,
+				TokenTypeNil,
+				TokenTypeOr,
+				TokenTypePrint,
+				TokenTypeReturn,
+				TokenTypeSuper,
+				TokenTypeThis,
+				TokenTypeTrue,
+				TokenTypeVar,
+				TokenTypeWhile,
+				TokenTypeIdentifier,
+				TokenTypeEOF,
+			},
+		},
 	}
 
 	for _, test := range tests {

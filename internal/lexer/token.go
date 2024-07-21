@@ -33,8 +33,43 @@ const (
 	TokenTypeString
 	TokenTypeNumber
 	TokenTypeIdentifier
+	TokenTypeAnd
+	TokenTypeClass
+	TokenTypeElse
+	TokenTypeFalse
+	TokenTypeFor
+	TokenTypeFun
+	TokenTypeIf
+	TokenTypeNil
+	TokenTypeOr
+	TokenTypePrint
+	TokenTypeReturn
+	TokenTypeSuper
+	TokenTypeThis
+	TokenTypeTrue
+	TokenTypeVar
+	TokenTypeWhile
 	TokenTypeUnknown
 )
+
+var reserved = map[string]TokenType{
+	"and":    TokenTypeAnd,
+	"class":  TokenTypeClass,
+	"else":   TokenTypeElse,
+	"false":  TokenTypeFalse,
+	"for":    TokenTypeFor,
+	"fun":    TokenTypeFun,
+	"if":     TokenTypeIf,
+	"nil":    TokenTypeNil,
+	"or":     TokenTypeOr,
+	"print":  TokenTypePrint,
+	"return": TokenTypeReturn,
+	"super":  TokenTypeSuper,
+	"this":   TokenTypeThis,
+	"true":   TokenTypeTrue,
+	"var":    TokenTypeVar,
+	"while":  TokenTypeWhile,
+}
 
 func (t TokenType) String() string {
 	switch t {
@@ -84,6 +119,38 @@ func (t TokenType) String() string {
 		return "NUMBER"
 	case TokenTypeIdentifier:
 		return "IDENTIFIER"
+	case TokenTypeAnd:
+		return "AND"
+	case TokenTypeClass:
+		return "CLASS"
+	case TokenTypeElse:
+		return "ELSE"
+	case TokenTypeFalse:
+		return "FALSE"
+	case TokenTypeFor:
+		return "FOR"
+	case TokenTypeFun:
+		return "FUN"
+	case TokenTypeIf:
+		return "IF"
+	case TokenTypeNil:
+		return "NIL"
+	case TokenTypeOr:
+		return "OR"
+	case TokenTypePrint:
+		return "PRINT"
+	case TokenTypeReturn:
+		return "RETURN"
+	case TokenTypeSuper:
+		return "SUPER"
+	case TokenTypeThis:
+		return "THIS"
+	case TokenTypeTrue:
+		return "TRUE"
+	case TokenTypeVar:
+		return "VAR"
+	case TokenTypeWhile:
+		return "WHILE"
 	default:
 		panic("Unknown token type")
 	}
@@ -170,7 +237,7 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 			return readNumber(s, stream)
 		}
 		if isAlpha(s) {
-			return readIdentifier(s, stream)
+			return readIdentifierOrReserved(s, stream)
 		}
 		return &Token{Type: TokenTypeUnknown, Lexeme: string(s)}, nil
 	}
@@ -212,13 +279,17 @@ func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
 	return &Token{Type: TokenTypeNumber, Lexeme: number, Literal: literal}, nil
 }
 
-func readIdentifier(s rune, stream *bufio.Reader) (*Token, error) {
+func readIdentifierOrReserved(s rune, stream *bufio.Reader) (*Token, error) {
 	ident := string(s)
 	for isAlphaNumeric(peekNext(stream)) {
 		ident += string(peekNext(stream))
 		_, _ = stream.Discard(1)
 	}
-	return &Token{Type: TokenTypeIdentifier, Lexeme: ident}, nil
+	tokenType := TokenTypeIdentifier
+	if reservedType, ok := reserved[ident]; ok {
+		tokenType = reservedType
+	}
+	return &Token{Type: tokenType, Lexeme: ident}, nil
 }
 
 func (t *Token) String() string {
