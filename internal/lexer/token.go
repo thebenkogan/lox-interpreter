@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 )
 
@@ -37,59 +38,6 @@ func peekNext(stream *bufio.Reader) rune {
 		return rune(next[0])
 	}
 	return rune(0)
-}
-
-func stringToType(s string, stream *bufio.Reader) (TokenType, string) {
-	switch s {
-	case "(":
-		return TokenTypeLeftParen, s
-	case ")":
-		return TokenTypeRightParen, s
-	case "{":
-		return TokenTypeLeftBrace, s
-	case "}":
-		return TokenTypeRightBrace, s
-	case ",":
-		return TokenTypeComma, s
-	case ".":
-		return TokenTypeDot, s
-	case "-":
-		return TokenTypeMinus, s
-	case "+":
-		return TokenTypePlus, s
-	case ";":
-		return TokenTypeSemicolon, s
-	case "*":
-		return TokenTypeStar, s
-	case "/":
-		return TokenTypeSlash, s
-	case "=":
-		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
-			return TokenTypeEqualEqual, "=="
-		}
-		return TokenTypeEqual, s
-	case "!":
-		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
-			return TokenTypeBangEqual, "!="
-		}
-		return TokenTypeBang, s
-	case "<":
-		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
-			return TokenTypeLessEqual, "<="
-		}
-		return TokenTypeLess, s
-	case ">":
-		if peekNext(stream) == '=' {
-			_, _ = stream.ReadByte()
-			return TokenTypeGreaterEqual, ">="
-		}
-		return TokenTypeGreater, s
-	default:
-		return TokenTypeUnknown, ""
-	}
 }
 
 func (t TokenType) String() string {
@@ -145,6 +93,69 @@ type Token struct {
 	Literal string
 }
 
+func readToken(s rune, stream *bufio.Reader) (*Token, error) {
+	switch s {
+	case '@':
+		fallthrough
+	case '#':
+		fallthrough
+	case '^':
+		fallthrough
+	case '$':
+		fallthrough
+	case '%':
+		return nil, errors.New(string(s))
+	case '(':
+		return &Token{Type: TokenTypeLeftParen, Lexeme: string(s)}, nil
+	case ')':
+		return &Token{Type: TokenTypeRightParen, Lexeme: string(s)}, nil
+	case '{':
+		return &Token{Type: TokenTypeLeftBrace, Lexeme: string(s)}, nil
+	case '}':
+		return &Token{Type: TokenTypeRightBrace, Lexeme: string(s)}, nil
+	case ',':
+		return &Token{Type: TokenTypeComma, Lexeme: string(s)}, nil
+	case '.':
+		return &Token{Type: TokenTypeDot, Lexeme: string(s)}, nil
+	case '-':
+		return &Token{Type: TokenTypeMinus, Lexeme: string(s)}, nil
+	case '+':
+		return &Token{Type: TokenTypePlus, Lexeme: string(s)}, nil
+	case ';':
+		return &Token{Type: TokenTypeSemicolon, Lexeme: string(s)}, nil
+	case '*':
+		return &Token{Type: TokenTypeStar, Lexeme: string(s)}, nil
+	case '/':
+		return &Token{Type: TokenTypeSlash, Lexeme: string(s)}, nil
+	case '=':
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return &Token{Type: TokenTypeEqualEqual, Lexeme: "=="}, nil
+		}
+		return &Token{Type: TokenTypeEqual, Lexeme: string(s)}, nil
+	case '!':
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return &Token{Type: TokenTypeBangEqual, Lexeme: "!="}, nil
+		}
+		return &Token{Type: TokenTypeBang, Lexeme: string(s)}, nil
+	case '<':
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return &Token{Type: TokenTypeLessEqual, Lexeme: "<="}, nil
+		}
+		return &Token{Type: TokenTypeLess, Lexeme: string(s)}, nil
+	case '>':
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return &Token{Type: TokenTypeGreaterEqual, Lexeme: ">="}, nil
+		}
+		return &Token{Type: TokenTypeGreater, Lexeme: string(s)}, nil
+	default:
+		return &Token{Type: TokenTypeUnknown, Lexeme: string(s)}, nil
+	}
+}
+
 func (t *Token) String() string {
 	switch t.Type {
 	case TokenTypeEOF:
@@ -163,9 +174,10 @@ type TokenError struct {
 	token string
 }
 
-var errorRunes = []rune{'@', '#', '^', '$', '%'}
-
 func (te *TokenError) String() string {
+	if te.token == "\"" {
+		return fmt.Sprintf("[line %d] Error: Unterminated string.", te.line)
+	}
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %s", te.line, te.token)
 }
 

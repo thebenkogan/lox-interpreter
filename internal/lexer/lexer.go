@@ -3,7 +3,6 @@ package lexer
 import (
 	"bufio"
 	"io"
-	"slices"
 )
 
 func Tokenize(file io.Reader) ([]Token, []TokenError) {
@@ -11,7 +10,6 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 	tokens := make([]Token, 0)
 	errors := make([]TokenError, 0)
 	line := 1
-	var token string
 	for {
 		char, _, err := f.ReadRune()
 		if err == io.EOF {
@@ -27,21 +25,18 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 		}
 		if char == '/' && peekNext(f) == '/' {
 			_, _ = f.ReadString('\n')
-			token = ""
 			line++
 			continue
 		}
-		if slices.Contains(errorRunes, char) {
+		parsed, err := readToken(char, f)
+		if err != nil {
 			errors = append(errors, TokenError{line: line, token: string(char)})
 			continue
 		}
-		token += string(char)
-		tokenType, fullToken := stringToType(token, f)
-		if tokenType == TokenTypeUnknown {
+		if parsed.Type == TokenTypeUnknown {
 			continue
 		}
-		tokens = append(tokens, Token{Type: tokenType, Lexeme: fullToken})
-		token = ""
+		tokens = append(tokens, *parsed)
 	}
 	return tokens, errors
 }
