@@ -31,16 +31,9 @@ const (
 	TokenTypeGreater
 	TokenTypeGreaterEqual
 	TokenTypeString
+	TokenTypeNumber
 	TokenTypeUnknown
 )
-
-func peekNext(stream *bufio.Reader) rune {
-	next, _ := stream.Peek(1)
-	if len(next) > 0 {
-		return rune(next[0])
-	}
-	return rune(0)
-}
 
 func (t TokenType) String() string {
 	switch t {
@@ -86,6 +79,8 @@ func (t TokenType) String() string {
 		return "GREATER_EQUAL"
 	case TokenTypeString:
 		return "STRING"
+	case TokenTypeNumber:
+		return "NUMBER"
 	default:
 		panic("Unknown token type")
 	}
@@ -95,6 +90,14 @@ type Token struct {
 	Type    TokenType
 	Lexeme  string
 	Literal string
+}
+
+func peekNext(stream *bufio.Reader) rune {
+	next, _ := stream.Peek(1)
+	if len(next) > 0 {
+		return rune(next[0])
+	}
+	return rune(0)
 }
 
 func readToken(s rune, stream *bufio.Reader) (*Token, error) {
@@ -110,7 +113,7 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 	case '&':
 		fallthrough
 	case '%':
-		return nil, errors.New(string(s))
+		return nil, fmt.Errorf("Unexpected character: %s", string(s))
 	case '(':
 		return &Token{Type: TokenTypeLeftParen, Lexeme: string(s)}, nil
 	case ')':
@@ -158,15 +161,39 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 		}
 		return &Token{Type: TokenTypeGreater, Lexeme: string(s)}, nil
 	case '"':
-		rest, err := stream.ReadString('"')
-		if err != nil {
-			return nil, errors.New("Unterminated string")
-		}
-		literal := strings.TrimSuffix(rest, "\"")
-		return &Token{Type: TokenTypeString, Lexeme: fmt.Sprintf("\"%s\"", literal), Literal: literal}, nil
+		return readString(s, stream)
 	default:
+		if isDigit(s) {
+			return readNumber(s, stream)
+		}
 		return &Token{Type: TokenTypeUnknown, Lexeme: string(s)}, nil
 	}
+}
+
+func readString(_ rune, stream *bufio.Reader) (*Token, error) {
+	rest, err := stream.ReadString('"')
+	if err != nil {
+		return nil, errors.New("Unterminated string.")
+	}
+	literal := strings.TrimSuffix(rest, "\"")
+	return &Token{Type: TokenTypeString, Lexeme: fmt.Sprintf("\"%s\"", literal), Literal: literal}, nil
+}
+
+func readNumber(s rune, stream *bufio.Reader) (*Token, error) {
+	number := string(s)
+	for {
+		next := peekNext(stream)
+		if isDigit(next) || next == '.' {
+			number += string(next)
+			_, _ = stream.ReadByte()
+		} else {
+			break
+		}
+	}
+	if strings.HasSuffix(number, ".") {
+		return nil, errors.New("Unexpected character.")
+	}
+	return &Token{Type: TokenTypeNumber, Lexeme: number, Literal: number}, nil
 }
 
 func (t *Token) String() string {
@@ -183,17 +210,18 @@ func (t *Token) String() string {
 }
 
 type TokenError struct {
-	line  int
-	token string
+	line int
+	msg  string
 }
 
 func (te *TokenError) String() string {
-	if te.token == "\"" {
-		return fmt.Sprintf("[line %d] Error: Unterminated string.", te.line)
-	}
-	return fmt.Sprintf("[line %d] Error: Unexpected character: %s", te.line, te.token)
+	return fmt.Sprintf("[line %d] Error: %s", te.line, te.msg)
 }
 
 func isWhitespace(r rune) bool {
 	return r == ' ' || r == '\t'
+}
+
+func isDigit(r rune) bool {
+	return r >= '0' && r <= '9'
 }

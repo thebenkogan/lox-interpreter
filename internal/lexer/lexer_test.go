@@ -38,9 +38,9 @@ func TestLexer(t *testing.T) {
 			program:  "*%(\n^\n$)",
 			expected: []TokenType{TokenTypeStar, TokenTypeLeftParen, TokenTypeRightParen, TokenTypeEOF},
 			expectedErrors: []TokenError{
-				{line: 1, token: "%"},
-				{line: 2, token: "^"},
-				{line: 3, token: "$"},
+				{line: 1, msg: "Unexpected character: %"},
+				{line: 2, msg: "Unexpected character: ^"},
+				{line: 3, msg: "Unexpected character: $"},
 			},
 		},
 		{
@@ -69,7 +69,7 @@ func TestLexer(t *testing.T) {
 			program:  "// this is a comment\n==\n!%// this is another comment\n=//last one",
 			expected: []TokenType{TokenTypeEqualEqual, TokenTypeBang, TokenTypeEqual, TokenTypeEOF},
 			expectedErrors: []TokenError{
-				{line: 3, token: "%"},
+				{line: 3, msg: "Unexpected character: %"},
 			},
 		},
 		{
@@ -93,7 +93,24 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 			expectedErrors: []TokenError{
-				{line: 2, token: "\""},
+				{line: 2, msg: "Unterminated string."},
+			},
+		},
+		{
+			name:    "numbers",
+			program: "1234 1234.5 . 1.234 12.34\n.1234\n1234.",
+			expected: []TokenType{
+				TokenTypeNumber,
+				TokenTypeNumber,
+				TokenTypeDot,
+				TokenTypeNumber,
+				TokenTypeNumber,
+				TokenTypeDot,
+				TokenTypeNumber,
+				TokenTypeEOF,
+			},
+			expectedErrors: []TokenError{
+				{line: 3, msg: "Unexpected character."},
 			},
 		},
 	}

@@ -30,7 +30,7 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 		}
 		parsed, err := readToken(char, f)
 		if err != nil {
-			errors = append(errors, TokenError{line: line, token: string(char)})
+			errors = append(errors, TokenError{line: line, msg: err.Error()})
 			continue
 		}
 		if parsed.Type == TokenTypeUnknown {
