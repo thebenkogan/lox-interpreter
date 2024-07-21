@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type TokenType int
@@ -29,6 +30,7 @@ const (
 	TokenTypeLessEqual
 	TokenTypeGreater
 	TokenTypeGreaterEqual
+	TokenTypeString
 	TokenTypeUnknown
 )
 
@@ -82,6 +84,8 @@ func (t TokenType) String() string {
 		return "GREATER"
 	case TokenTypeGreaterEqual:
 		return "GREATER_EQUAL"
+	case TokenTypeString:
+		return "STRING"
 	default:
 		panic("Unknown token type")
 	}
@@ -151,6 +155,13 @@ func readToken(s rune, stream *bufio.Reader) (*Token, error) {
 			return &Token{Type: TokenTypeGreaterEqual, Lexeme: ">="}, nil
 		}
 		return &Token{Type: TokenTypeGreater, Lexeme: string(s)}, nil
+	case '"':
+		rest, err := stream.ReadString('"')
+		if err != nil {
+			return nil, errors.New("Unterminated string")
+		}
+		literal := strings.TrimSuffix(rest, "\"")
+		return &Token{Type: TokenTypeString, Lexeme: fmt.Sprintf("\"%s\"", literal), Literal: literal}, nil
 	default:
 		return &Token{Type: TokenTypeUnknown, Lexeme: string(s)}, nil
 	}

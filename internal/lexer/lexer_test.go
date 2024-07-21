@@ -83,6 +83,19 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 		},
+		{
+			name:    "strings",
+			program: "\"hello\" \"world\" \"!\"\n\"unterminated",
+			expected: []TokenType{
+				TokenTypeString,
+				TokenTypeString,
+				TokenTypeString,
+				TokenTypeEOF,
+			},
+			expectedErrors: []TokenError{
+				{line: 2, token: "\""},
+			},
+		},
 	}
 
 	for _, test := range tests {
