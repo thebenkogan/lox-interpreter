@@ -22,8 +22,18 @@ const (
 	TokenTypeSlash
 	TokenTypeEqual
 	TokenTypeEqualEqual
+	TokenTypeBang
+	TokenTypeBangEqual
 	TokenTypeUnknown
 )
+
+func peekNext(stream *bufio.Reader) rune {
+	next, _ := stream.Peek(1)
+	if len(next) > 0 {
+		return rune(next[0])
+	}
+	return rune(0)
+}
 
 func stringToType(s string, stream *bufio.Reader) (TokenType, string) {
 	switch s {
@@ -50,12 +60,17 @@ func stringToType(s string, stream *bufio.Reader) (TokenType, string) {
 	case "/":
 		return TokenTypeSlash, s
 	case "=":
-		next, _ := stream.Peek(1)
-		if len(next) > 0 && next[0] == '=' {
+		if peekNext(stream) == '=' {
 			_, _ = stream.ReadByte()
 			return TokenTypeEqualEqual, "=="
 		}
 		return TokenTypeEqual, s
+	case "!":
+		if peekNext(stream) == '=' {
+			_, _ = stream.ReadByte()
+			return TokenTypeBangEqual, "!="
+		}
+		return TokenTypeBang, s
 	default:
 		return TokenTypeUnknown, ""
 	}
@@ -91,6 +106,10 @@ func (t TokenType) String() string {
 		return "EQUAL"
 	case TokenTypeEqualEqual:
 		return "EQUAL_EQUAL"
+	case TokenTypeBang:
+		return "BANG"
+	case TokenTypeBangEqual:
+		return "BANG_EQUAL"
 	default:
 		panic("Unknown token type")
 	}
