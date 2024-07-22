@@ -51,6 +51,24 @@ func run(args []string) error {
 			os.Exit(65)
 		}
 		fmt.Println(expr.String())
+	case "evaluate":
+		if len(errors) > 0 {
+			for _, error := range errors {
+				fmt.Fprintln(os.Stderr, error.String())
+			}
+			os.Exit(65)
+		}
+		expr, err := parser.Parse(tokens)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+			os.Exit(65)
+		}
+		result, err := expr.Evaluate()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+			os.Exit(65)
+		}
+		fmt.Println(result)
 	default:
 		return fmt.Errorf("Unknown command: %s\n", command)
 	}
