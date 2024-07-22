@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
-	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
+	"github.com/thebenkogan/lox-interpreter/internal/lexer"
+	"github.com/thebenkogan/lox-interpreter/internal/parser"
 )
 
 func main() {

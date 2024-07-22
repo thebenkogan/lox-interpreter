@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
+	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 )
 
 func TestParser(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/codecrafters-io/interpreter-starter-go/internal/evaluator"
-	"github.com/codecrafters-io/interpreter-starter-go/internal/lexer"
+	"github.com/thebenkogan/lox-interpreter/internal/evaluator"
+	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 )
 
 // expression     → equality ;
