@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 
@@ -16,8 +18,9 @@ func main() {
 }
 
 func run(args []string) error {
-	if len(args) < 3 {
-		return fmt.Errorf("Usage: ./your_program.sh tokenize <filename>")
+	command := args[1]
+	if command == "repl" {
+		return repl()
 	}
 
 	file, err := os.Open(args[2])
@@ -26,7 +29,6 @@ func run(args []string) error {
 	}
 	tokens, errors := lexer.Tokenize(file)
 
-	command := args[1]
 	switch command {
 	case "tokenize":
 		for _, token := range tokens {
@@ -74,4 +76,36 @@ func run(args []string) error {
 	}
 
 	return nil
+}
+
+func repl() error {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("> ")
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		if len(line) == 0 {
+			continue
+		}
+		tokens, errors := lexer.Tokenize(bytes.NewBuffer([]byte(line)))
+		if len(errors) > 0 {
+			for _, error := range errors {
+				fmt.Fprintln(os.Stderr, error.String())
+			}
+			continue
+		}
+		expr, err := parser.Parse(tokens)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+			continue
+		}
+		result, err := expr.Evaluate()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Runtime Error: %s\n", err.Error())
+			continue
+		}
+		fmt.Println(result)
+	}
 }
