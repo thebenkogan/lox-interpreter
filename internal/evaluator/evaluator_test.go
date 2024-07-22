@@ -157,6 +157,10 @@ func TestEvaluator(t *testing.T) {
 				t.Errorf("Expected error, got nil")
 				return
 			}
+			if !test.expectError && err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
 			if result != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
 			}

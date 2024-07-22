@@ -77,7 +77,7 @@ func (e *ExpressionBinary) Evaluate() (any, error) {
 			if !ok1 || !ok2 {
 				return nil, errors.New("Can only add numbers or strings")
 			}
-			return leftStr + rightStr, err
+			return leftStr + rightStr, nil
 		}
 		return leftNum + rightNum, nil
 	case BinaryOperatorSubtract:
