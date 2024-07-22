@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/thebenkogan/lox-interpreter/internal/evaluator"
 	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 )
 
@@ -198,13 +199,17 @@ func TestParser(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tokens, _ := lexer.Tokenize(bytes.NewBuffer([]byte(test.program)))
-			expr, err := Parse(tokens)
+			tokens, _ := lexer.Tokenize(bytes.NewBuffer([]byte(test.program + ";")))
+			statements, err := Parse(tokens)
+			if test.expectError {
+				if err == nil {
+					t.Errorf("Expected error, got nil")
+				}
+				return
+			}
+			expr := statements[0].(*evaluator.ExpressionStatement).Expression
 			if test.expected != "" && expr.String() != test.expected {
 				t.Errorf("Expected %s, got %s", test.expected, expr.String())
-			}
-			if test.expectError && err == nil {
-				t.Errorf("Expected error, got nil")
 			}
 		})
 	}

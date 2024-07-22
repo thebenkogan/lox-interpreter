@@ -167,7 +167,7 @@ func TestLexer(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			stream := bytes.NewBuffer([]byte(test.program))
-			tokens, errors := Tokenize(stream)
+			tokens, err := Tokenize(stream)
 
 			tokenTypes := make([]TokenType, 0)
 			for _, token := range tokens {
@@ -177,8 +177,8 @@ func TestLexer(t *testing.T) {
 				t.Errorf("Expected token types %v, got %v", test.expected, tokenTypes)
 			}
 
-			if test.expectedErrors != nil && !reflect.DeepEqual(errors, test.expectedErrors) {
-				t.Errorf("Expected errors %v, got %v", test.expectedErrors, errors)
+			if test.expectedErrors != nil && !reflect.DeepEqual(err.Errors, test.expectedErrors) {
+				t.Errorf("Expected errors %v, got %v", test.expectedErrors, err.Errors)
 			}
 		})
 	}

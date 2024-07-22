@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/thebenkogan/lox-interpreter/internal/interpreter"
 	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 	"github.com/thebenkogan/lox-interpreter/internal/parser"
 )
@@ -27,50 +28,37 @@ func run(args []string) error {
 	if err != nil {
 		return fmt.Errorf("Error opening file: %w", err)
 	}
-	tokens, errors := lexer.Tokenize(file)
 
 	switch command {
 	case "tokenize":
+		tokens, lexerErr := lexer.Tokenize(file)
 		for _, token := range tokens {
 			fmt.Println(token.String())
 		}
-		if len(errors) > 0 {
-			for _, error := range errors {
-				fmt.Fprintln(os.Stderr, error.String())
-			}
-			os.Exit(65)
+		if lexerErr != nil {
+			fmt.Fprint(os.Stderr, lexerErr.Error())
+			os.Exit(lexerErr.Code())
 		}
 	case "parse":
-		if len(errors) > 0 {
-			for _, error := range errors {
-				fmt.Fprintln(os.Stderr, error.String())
-			}
-			os.Exit(65)
+		tokens, lexerErr := lexer.Tokenize(file)
+		if lexerErr != nil {
+			fmt.Fprint(os.Stderr, lexerErr.Error())
+			os.Exit(lexerErr.Code())
 		}
 		expr, err := parser.Parse(tokens)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
 			os.Exit(65)
 		}
-		fmt.Println(expr.String())
-	case "evaluate":
-		if len(errors) > 0 {
-			for _, error := range errors {
-				fmt.Fprintln(os.Stderr, error.String())
-			}
-			os.Exit(65)
+		for _, statement := range expr {
+			fmt.Println(statement.String())
 		}
-		expr, err := parser.Parse(tokens)
+	case "execute":
+		err := interpreter.Interpret(file)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
-			os.Exit(65)
+			fmt.Fprint(os.Stderr, err.Error())
+			os.Exit(err.Code())
 		}
-		result, err := expr.Evaluate()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Runtime Error: %s\n", err.Error())
-			os.Exit(70)
-		}
-		fmt.Println(result)
 	default:
 		return fmt.Errorf("Unknown command: %s\n", command)
 	}
@@ -86,26 +74,9 @@ func repl() error {
 		if err != nil {
 			return err
 		}
-		if len(line) == 0 {
-			continue
-		}
-		tokens, errors := lexer.Tokenize(bytes.NewBuffer([]byte(line)))
-		if len(errors) > 0 {
-			for _, error := range errors {
-				fmt.Fprintln(os.Stderr, error.String())
-			}
-			continue
-		}
-		expr, err := parser.Parse(tokens)
+		err = interpreter.Interpret(bytes.NewBuffer([]byte(line)))
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
-			continue
+			fmt.Fprintln(os.Stderr, err.Error())
 		}
-		result, err := expr.Evaluate()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Runtime Error: %s\n", err.Error())
-			continue
-		}
-		fmt.Println(result)
 	}
 }

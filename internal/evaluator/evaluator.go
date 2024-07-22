@@ -1,12 +1,10 @@
 package evaluator
 
-import "errors"
-
-func (e *ExpressionLiteral) Evaluate() (any, error) {
+func (e *ExpressionLiteral) Evaluate() (any, *RuntimeError) {
 	return e.Literal, nil
 }
 
-func (e *ExpressionGroup) Evaluate() (any, error) {
+func (e *ExpressionGroup) Evaluate() (any, *RuntimeError) {
 	return e.Child.Evaluate()
 }
 
@@ -14,7 +12,7 @@ func toBool(value any) bool {
 	return value != nil && value != false
 }
 
-func (e *ExpressionUnary) Evaluate() (any, error) {
+func (e *ExpressionUnary) Evaluate() (any, *RuntimeError) {
 	child, err := e.Child.Evaluate()
 	if err != nil {
 		return nil, err
@@ -25,26 +23,26 @@ func (e *ExpressionUnary) Evaluate() (any, error) {
 	case UnaryOperatorMinus:
 		n, ok := child.(float64)
 		if !ok {
-			return nil, errors.New("Expected number after '-'")
+			return nil, NewRuntimeError("Expected number after '-'")
 		}
 		return -n, nil
 	}
 	panic("Unknown unary operator")
 }
 
-func getNums(left, right any) (float64, float64, error) {
+func getNums(left, right any) (float64, float64, *RuntimeError) {
 	leftNum, ok := left.(float64)
 	if !ok {
-		return 0, 0, errors.New("Expected number")
+		return 0, 0, NewRuntimeError("Expected number")
 	}
 	rightNum, ok := right.(float64)
 	if !ok {
-		return 0, 0, errors.New("Expected number")
+		return 0, 0, NewRuntimeError("Expected number")
 	}
 	return leftNum, rightNum, nil
 }
 
-func (e *ExpressionBinary) Evaluate() (any, error) {
+func (e *ExpressionBinary) Evaluate() (any, *RuntimeError) {
 	left, err := e.Left.Evaluate()
 	if err != nil {
 		return nil, err
@@ -66,7 +64,7 @@ func (e *ExpressionBinary) Evaluate() (any, error) {
 			return nil, err
 		}
 		if rightNum == 0 {
-			return nil, errors.New("Division by zero")
+			return nil, NewRuntimeError("Division by zero")
 		}
 		return leftNum / rightNum, nil
 	case BinaryOperatorAdd:
@@ -75,7 +73,7 @@ func (e *ExpressionBinary) Evaluate() (any, error) {
 			leftStr, ok1 := left.(string)
 			rightStr, ok2 := right.(string)
 			if !ok1 || !ok2 {
-				return nil, errors.New("Can only add numbers or strings")
+				return nil, NewRuntimeError("Can only add numbers or strings")
 			}
 			return leftStr + rightStr, nil
 		}

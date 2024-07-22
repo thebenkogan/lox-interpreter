@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func Tokenize(file io.Reader) ([]Token, []TokenError) {
+func Tokenize(file io.Reader) ([]Token, *LexerError) {
 	f := bufio.NewReader(file)
 	tokens := make([]Token, 0)
 	errors := make([]TokenError, 0)
@@ -38,5 +38,9 @@ func Tokenize(file io.Reader) ([]Token, []TokenError) {
 		}
 		tokens = append(tokens, *parsed)
 	}
-	return tokens, errors
+	var err *LexerError
+	if len(errors) > 0 {
+		err = &LexerError{Errors: errors}
+	}
+	return tokens, err
 }
