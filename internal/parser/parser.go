@@ -198,9 +198,6 @@ func (p *parser) primary() (evaluator.Expression, error) {
 		if err != nil {
 			return nil, err
 		}
-		if expr == nil {
-			return nil, errors.New("Expected expression after '('")
-		}
 		if !p.advanceMatch(lexer.TokenTypeRightParen) {
 			return nil, errors.New("Unmatched parentheses.")
 		}

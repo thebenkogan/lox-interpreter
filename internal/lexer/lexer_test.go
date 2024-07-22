@@ -153,6 +153,15 @@ func TestLexer(t *testing.T) {
 				TokenTypeEOF,
 			},
 		},
+		{
+			name:    "unknown token gets skipped",
+			program: "123 漢字 234",
+			expected: []TokenType{
+				TokenTypeNumber,
+				TokenTypeNumber,
+				TokenTypeEOF,
+			},
+		},
 	}
 
 	for _, test := range tests {
