@@ -1,19 +1,19 @@
 package evaluator
 
-func (e *ExpressionLiteral) Evaluate() (any, *RuntimeError) {
+func (e *ExpressionLiteral) Evaluate(env *Environment) (any, *RuntimeError) {
 	return e.Literal, nil
 }
 
-func (e *ExpressionGroup) Evaluate() (any, *RuntimeError) {
-	return e.Child.Evaluate()
+func (e *ExpressionGroup) Evaluate(env *Environment) (any, *RuntimeError) {
+	return e.Child.Evaluate(env)
 }
 
 func toBool(value any) bool {
 	return value != nil && value != false
 }
 
-func (e *ExpressionUnary) Evaluate() (any, *RuntimeError) {
-	child, err := e.Child.Evaluate()
+func (e *ExpressionUnary) Evaluate(env *Environment) (any, *RuntimeError) {
+	child, err := e.Child.Evaluate(env)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,12 @@ func getNums(left, right any) (float64, float64, *RuntimeError) {
 	return leftNum, rightNum, nil
 }
 
-func (e *ExpressionBinary) Evaluate() (any, *RuntimeError) {
-	left, err := e.Left.Evaluate()
+func (e *ExpressionBinary) Evaluate(env *Environment) (any, *RuntimeError) {
+	left, err := e.Left.Evaluate(env)
 	if err != nil {
 		return nil, err
 	}
-	right, err := e.Right.Evaluate()
+	right, err := e.Right.Evaluate(env)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +116,6 @@ func (e *ExpressionBinary) Evaluate() (any, *RuntimeError) {
 	panic("Unknown binary operator")
 }
 
-func (e *ExpressionVariable) Evaluate() (any, *RuntimeError) {
-	panic("todo")
+func (e *ExpressionVariable) Evaluate(env *Environment) (any, *RuntimeError) {
+	return env.Get(e.Name)
 }

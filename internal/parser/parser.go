@@ -269,7 +269,7 @@ func (p *parser) primary() (evaluator.Expression, *ParserError) {
 		}
 		return &evaluator.ExpressionGroup{Child: expr}, nil
 	case p.advanceMatch(lexer.TokenTypeIdentifier):
-		return &evaluator.ExpressionVariable{Name: p.previous().Literal}, nil
+		return &evaluator.ExpressionVariable{Name: p.previous().Lexeme}, nil
 	}
 	return nil, NewParserError("Expected expression.")
 }

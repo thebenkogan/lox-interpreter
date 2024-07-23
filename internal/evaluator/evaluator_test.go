@@ -149,12 +149,13 @@ func TestEvaluator(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		env := evaluator.NewEnvironment()
 		t.Run(test.name, func(t *testing.T) {
 			buf := bytes.NewBuffer([]byte(test.program + ";"))
 			tokens, _ := lexer.Tokenize(buf)
 			statements, _ := parser.Parse(tokens)
 			expr := statements[0].(*evaluator.ExpressionStatement).Expression
-			result, err := expr.Evaluate()
+			result, err := expr.Evaluate(env)
 			if test.expectError && err == nil {
 				t.Errorf("Expected error, got nil")
 				return
@@ -165,6 +166,76 @@ func TestEvaluator(t *testing.T) {
 			}
 			if result != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
+			}
+		})
+	}
+}
+
+func TestExecuteStatements(t *testing.T) {
+	tests := []struct {
+		name        string
+		program     string
+		expected    any
+		expectError bool
+	}{
+		{
+			name:     "expression statement does nothing",
+			program:  "2 + 3;",
+			expected: "",
+		},
+		{
+			name:     "print statement",
+			program:  "print 2 + 3;",
+			expected: "5\n",
+		},
+		{
+			name:     "uninitialized variable",
+			program:  "var a; print a;",
+			expected: "<nil>\n",
+		},
+		{
+			name:     "initialized variable",
+			program:  "var a = 123; print a;",
+			expected: "123\n",
+		},
+		{
+			name:     "initialized variable used in expression",
+			program:  "var a = 123; print a + a;",
+			expected: "246\n",
+		},
+		{
+			name:        "accessing uninitialized variable fails",
+			program:     "print a; var a = 123;",
+			expectError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			buf := bytes.NewBuffer([]byte(test.program))
+			tokens, _ := lexer.Tokenize(buf)
+			statements, _ := parser.Parse(tokens)
+			env := evaluator.NewEnvironment()
+			output := bytes.NewBuffer(nil)
+			var err error
+			for _, statement := range statements {
+				execErr := statement.Execute(env, output)
+				if execErr != nil {
+					err = execErr
+					break
+				}
+			}
+			if test.expectError && err == nil {
+				t.Errorf("Expected error, got nil")
+			}
+			if !test.expectError && err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+			if err != nil {
+				return
+			}
+			if output.String() != test.expected {
+				t.Errorf("Expected %v, got %v", test.expected, output.String())
 			}
 		})
 	}

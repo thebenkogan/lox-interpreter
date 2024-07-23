@@ -54,6 +54,7 @@ func run(args []string) error {
 			fmt.Println(statement.String())
 		}
 	case "execute":
+		interpreter := interpreter.NewInterpreter(os.Stdout)
 		err := interpreter.Interpret(file)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err.Error())
@@ -67,6 +68,7 @@ func run(args []string) error {
 }
 
 func repl() error {
+	interpreter := interpreter.NewInterpreter(os.Stdout)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
