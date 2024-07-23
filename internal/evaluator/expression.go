@@ -49,3 +49,8 @@ type ExpressionBinary struct {
 type ExpressionVariable struct {
 	Name string
 }
+
+type ExpressionAssignment struct {
+	Name string
+	Expr Expression
+}

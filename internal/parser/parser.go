@@ -120,7 +120,9 @@ func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserE
 	return &evaluator.ExpressionStatement{Expression: expr}, nil
 }
 
-// expression     → equality ;
+// expression     → assignment ;
+// assignment     → IDENTIFIER "=" assignment
+//                | equality ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
@@ -131,7 +133,29 @@ func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserE
 //                | "(" expression ")" ;
 
 func (p *parser) expression() (evaluator.Expression, *ParserError) {
-	return p.equality()
+	return p.assignment()
+}
+
+// assignment     → IDENTIFIER "=" assignment
+//                | equality ;
+
+func (p *parser) assignment() (evaluator.Expression, *ParserError) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+	if p.advanceMatch(lexer.TokenTypeEqual) {
+		variable, ok := expr.(*evaluator.ExpressionVariable)
+		if !ok {
+			return nil, NewParserError("Can only assign to variables")
+		}
+		right, err := p.assignment()
+		if err != nil {
+			return nil, err
+		}
+		return &evaluator.ExpressionAssignment{Name: variable.Name, Expr: right}, nil
+	}
+	return expr, nil
 }
 
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;

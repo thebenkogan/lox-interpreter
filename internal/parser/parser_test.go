@@ -228,7 +228,7 @@ func TestParseStatement(t *testing.T) {
 		{
 			name:     "expression statement",
 			program:  "2 + 3;",
-			expected: "expr (+ 2.0 3.0)",
+			expected: "(expr (+ 2.0 3.0))",
 		},
 		{
 			name:        "expression statement no semicolon",
@@ -264,6 +264,11 @@ func TestParseStatement(t *testing.T) {
 			name:        "variable statement no semicolon",
 			program:     "var b = 2 + 3",
 			expectError: true,
+		},
+		{
+			name:     "assignment",
+			program:  "a = 5;",
+			expected: "(expr a = 5.0)",
 		},
 	}
 

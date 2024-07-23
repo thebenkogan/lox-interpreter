@@ -119,3 +119,12 @@ func (e *ExpressionBinary) Evaluate(env *Environment) (any, *RuntimeError) {
 func (e *ExpressionVariable) Evaluate(env *Environment) (any, *RuntimeError) {
 	return env.Get(e.Name)
 }
+
+func (e *ExpressionAssignment) Evaluate(env *Environment) (any, *RuntimeError) {
+	result, err := e.Expr.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	env.Set(e.Name, result)
+	return result, nil
+}

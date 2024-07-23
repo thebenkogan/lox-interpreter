@@ -63,3 +63,7 @@ func (e *ExpressionBinary) String() string {
 func (e *ExpressionVariable) String() string {
 	return e.Name
 }
+
+func (e *ExpressionAssignment) String() string {
+	return fmt.Sprintf("%s = %s", e.Name, e.Expr.String())
+}

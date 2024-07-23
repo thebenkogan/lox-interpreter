@@ -15,7 +15,7 @@ type ExpressionStatement struct {
 }
 
 func (e *ExpressionStatement) String() string {
-	return fmt.Sprintf("expr %s", e.Expression.String())
+	return fmt.Sprintf("(expr %s)", e.Expression.String())
 }
 
 func (e *ExpressionStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {

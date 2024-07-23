@@ -146,6 +146,11 @@ func TestEvaluator(t *testing.T) {
 			program:  "5 != true",
 			expected: true,
 		},
+		{
+			name:     "assignment",
+			program:  "a = 5",
+			expected: float64(5),
+		},
 	}
 
 	for _, test := range tests {
@@ -207,6 +212,11 @@ func TestExecuteStatements(t *testing.T) {
 			name:        "accessing uninitialized variable fails",
 			program:     "print a; var a = 123;",
 			expectError: true,
+		},
+		{
+			name:     "assignment",
+			program:  "var a = 123; print a; a = 456; print a;",
+			expected: "123\n456\n",
 		},
 	}
 
