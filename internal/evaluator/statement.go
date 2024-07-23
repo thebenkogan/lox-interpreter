@@ -12,7 +12,7 @@ type ExpressionStatement struct {
 }
 
 func (e *ExpressionStatement) String() string {
-	return e.Expression.String()
+	return fmt.Sprintf("expr %s", e.Expression.String())
 }
 
 func (e *ExpressionStatement) Execute() *RuntimeError {
@@ -35,4 +35,20 @@ func (e *PrintStatement) Execute() *RuntimeError {
 	}
 	fmt.Println(result)
 	return nil
+}
+
+type VarStatement struct {
+	Name string
+	Expr Expression
+}
+
+func (e *VarStatement) String() string {
+	if e.Expr == nil {
+		return fmt.Sprintf("var %s", e.Name)
+	}
+	return fmt.Sprintf("var %s = %s", e.Name, e.Expr.String())
+}
+
+func (e *VarStatement) Execute() *RuntimeError {
+	panic("todo")
 }

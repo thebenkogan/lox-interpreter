@@ -115,3 +115,7 @@ func (e *ExpressionBinary) Evaluate() (any, *RuntimeError) {
 	}
 	panic("Unknown binary operator")
 }
+
+func (e *ExpressionVariable) Evaluate() (any, *RuntimeError) {
+	panic("todo")
+}

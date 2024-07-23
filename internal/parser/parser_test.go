@@ -8,7 +8,7 @@ import (
 	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 )
 
-func TestParser(t *testing.T) {
+func TestParseExpression(t *testing.T) {
 	tests := []struct {
 		name        string
 		program     string
@@ -201,15 +201,88 @@ func TestParser(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			tokens, _ := lexer.Tokenize(bytes.NewBuffer([]byte(test.program + ";")))
 			statements, err := Parse(tokens)
-			if test.expectError {
-				if err == nil {
-					t.Errorf("Expected error, got nil")
-				}
+			if err != nil && !test.expectError {
+				t.Errorf("Expected no error, got %v", err)
+			}
+			if err == nil && test.expectError {
+				t.Errorf("Expected error, got nil")
+			}
+			if err != nil {
 				return
 			}
 			expr := statements[0].(*evaluator.ExpressionStatement).Expression
 			if test.expected != "" && expr.String() != test.expected {
 				t.Errorf("Expected %s, got %s", test.expected, expr.String())
+			}
+		})
+	}
+}
+
+func TestParseStatement(t *testing.T) {
+	tests := []struct {
+		name        string
+		program     string
+		expected    string
+		expectError bool
+	}{
+		{
+			name:     "expression statement",
+			program:  "2 + 3;",
+			expected: "expr (+ 2.0 3.0)",
+		},
+		{
+			name:        "expression statement no semicolon",
+			program:     "2 + 3",
+			expectError: true,
+		},
+		{
+			name:     "print statement",
+			program:  "print 2 + 3;",
+			expected: "print (+ 2.0 3.0)",
+		},
+		{
+			name:        "print statement no semicolon",
+			program:     "print 2 + 3",
+			expectError: true,
+		},
+		{
+			name:        "variable statement no identifier",
+			program:     "var 123;",
+			expectError: true,
+		},
+		{
+			name:     "variable statement no initializer",
+			program:  "var a;",
+			expected: "var a",
+		},
+		{
+			name:     "variable statement",
+			program:  "var b = 2 + 3;",
+			expected: "var b = (+ 2.0 3.0)",
+		},
+		{
+			name:        "variable statement no semicolon",
+			program:     "var b = 2 + 3",
+			expectError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tokens, _ := lexer.Tokenize(bytes.NewBuffer([]byte(test.program)))
+			statements, err := Parse(tokens)
+			if err != nil && !test.expectError {
+				t.Errorf("Expected no error, got %v", err)
+			}
+			if err == nil && test.expectError {
+				t.Errorf("Expected error, got nil")
+			}
+			if err != nil {
+				return
+			}
+			stmt := statements[0]
+			if test.expected != "" && stmt.String() != test.expected {
+				t.Errorf("Expected %s, got %s", test.expected, stmt.String())
 			}
 		})
 	}

@@ -45,3 +45,7 @@ type ExpressionBinary struct {
 	Left     Expression
 	Right    Expression
 }
+
+type ExpressionVariable struct {
+	Name string
+}

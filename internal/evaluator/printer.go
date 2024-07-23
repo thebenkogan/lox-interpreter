@@ -59,3 +59,7 @@ func (e *ExpressionBinary) String() string {
 	}
 	return fmt.Sprintf("(%s %s %s)", op, e.Left.String(), e.Right.String())
 }
+
+func (e *ExpressionVariable) String() string {
+	return e.Name
+}

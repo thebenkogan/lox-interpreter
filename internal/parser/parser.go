@@ -7,16 +7,6 @@ import (
 	"github.com/thebenkogan/lox-interpreter/internal/lexer"
 )
 
-// expression     → equality ;
-// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-// term           → factor ( ( "-" | "+" ) factor )* ;
-// factor         → unary ( ( "/" | "*" ) unary )* ;
-// unary          → ( "!" | "-" ) unary
-//                | primary ;
-// primary        → NUMBER | STRING | "true" | "false" | "nil"
-//                | "(" expression ")" ;
-
 func Parse(tokens []lexer.Token) ([]evaluator.Statement, *ParserError) {
 	p := &parser{tokens: tokens}
 	statements := make([]evaluator.Statement, 0)
@@ -72,11 +62,39 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 }
 
 func (p *parser) statement() (evaluator.Statement, *ParserError) {
+	if p.advanceMatch(lexer.TokenTypeVar) {
+		return p.varStatement()
+	}
 	if p.advanceMatch(lexer.TokenTypePrint) {
 		return p.printStatement()
 	}
 	return p.expressionStatement()
 }
+
+// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+
+func (p *parser) varStatement() (*evaluator.VarStatement, *ParserError) {
+	if !p.advanceMatch(lexer.TokenTypeIdentifier) {
+		return nil, NewParserError("Expected variable name")
+	}
+
+	varStmt := &evaluator.VarStatement{Name: p.previous().Lexeme}
+	if p.advanceMatch(lexer.TokenTypeEqual) {
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		varStmt.Expr = expr
+	}
+
+	if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+		return nil, NewParserError("Expected semicolon after var statement")
+	}
+
+	return varStmt, nil
+}
+
+// printStmt      → "print" expression ";" ;
 
 func (p *parser) printStatement() (*evaluator.PrintStatement, *ParserError) {
 	expr, err := p.expression()
@@ -89,6 +107,8 @@ func (p *parser) printStatement() (*evaluator.PrintStatement, *ParserError) {
 	return &evaluator.PrintStatement{Expression: expr}, nil
 }
 
+// exprStmt       → expression ";" ;
+
 func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserError) {
 	expr, err := p.expression()
 	if err != nil {
@@ -99,6 +119,16 @@ func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserE
 	}
 	return &evaluator.ExpressionStatement{Expression: expr}, nil
 }
+
+// expression     → equality ;
+// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+// term           → factor ( ( "-" | "+" ) factor )* ;
+// factor         → unary ( ( "/" | "*" ) unary )* ;
+// unary          → ( "!" | "-" ) unary
+//                | primary ;
+// primary        → NUMBER | STRING | "true" | "false" | "nil"
+//                | "(" expression ")" ;
 
 func (p *parser) expression() (evaluator.Expression, *ParserError) {
 	return p.equality()
@@ -214,7 +244,7 @@ func (p *parser) unary() (evaluator.Expression, *ParserError) {
 }
 
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
-//                | "(" expression ")" ;
+//                | "(" expression ")" | IDENTIFIER ;
 
 func (p *parser) primary() (evaluator.Expression, *ParserError) {
 	switch {
@@ -238,6 +268,8 @@ func (p *parser) primary() (evaluator.Expression, *ParserError) {
 			return nil, NewParserError("Unmatched parentheses.")
 		}
 		return &evaluator.ExpressionGroup{Child: expr}, nil
+	case p.advanceMatch(lexer.TokenTypeIdentifier):
+		return &evaluator.ExpressionVariable{Name: p.previous().Literal}, nil
 	}
 	return nil, NewParserError("Expected expression.")
 }
