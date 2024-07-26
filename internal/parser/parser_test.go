@@ -271,6 +271,11 @@ func TestParseStatement(t *testing.T) {
 			expected: "(expr a = 5.0)",
 		},
 		{
+			name:        "assignment to non-variable",
+			program:     "3 = 5;",
+			expectError: true,
+		},
+		{
 			name:     "block statement",
 			program:  "{2 + 3; var b = 5;}",
 			expected: "(block (expr (+ 2.0 3.0)); var b = 5.0;)",

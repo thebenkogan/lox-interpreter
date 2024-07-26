@@ -31,5 +31,8 @@ func (e *Environment) CreateScope() {
 }
 
 func (e *Environment) ExitScope() {
+	if len(e.scopes) == 0 {
+		panic("Cannot exit scope, no scopes to exit")
+	}
 	e.scopes = e.scopes[:len(e.scopes)-1]
 }
