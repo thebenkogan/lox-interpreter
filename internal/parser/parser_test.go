@@ -270,6 +270,21 @@ func TestParseStatement(t *testing.T) {
 			program:  "a = 5;",
 			expected: "(expr a = 5.0)",
 		},
+		{
+			name:     "block statement",
+			program:  "{2 + 3; var b = 5;}",
+			expected: "(block (expr (+ 2.0 3.0)); var b = 5.0;)",
+		},
+		{
+			name:        "block statement no right brace",
+			program:     "{2 + 3; var b = 5;",
+			expectError: true,
+		},
+		{
+			name:        "block statement no interior semicolon",
+			program:     "{2 + 3; var b = 5}",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

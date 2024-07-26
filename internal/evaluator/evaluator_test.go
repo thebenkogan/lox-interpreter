@@ -218,6 +218,16 @@ func TestExecuteStatements(t *testing.T) {
 			program:  "var a = 123; print a; a = 456; print a;",
 			expected: "123\n456\n",
 		},
+		{
+			name:     "block statement",
+			program:  "{var b = 5; print b + 3;}",
+			expected: "8\n",
+		},
+		{
+			name:     "block statements should create new scope",
+			program:  "var a = 5; print a; {var a = 6; print a;} print a;",
+			expected: "5\n6\n5\n",
+		},
 	}
 
 	for _, test := range tests {

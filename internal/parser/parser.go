@@ -62,13 +62,16 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 }
 
 func (p *parser) statement() (evaluator.Statement, *ParserError) {
-	if p.advanceMatch(lexer.TokenTypeVar) {
+	switch {
+	case p.advanceMatch(lexer.TokenTypeVar):
 		return p.varStatement()
-	}
-	if p.advanceMatch(lexer.TokenTypePrint) {
+	case p.advanceMatch(lexer.TokenTypePrint):
 		return p.printStatement()
+	case p.advanceMatch(lexer.TokenTypeLeftBrace):
+		return p.blockStatement()
+	default:
+		return p.expressionStatement()
 	}
-	return p.expressionStatement()
 }
 
 // varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -105,6 +108,23 @@ func (p *parser) printStatement() (*evaluator.PrintStatement, *ParserError) {
 		return nil, NewParserError("Expected semicolon after print statement")
 	}
 	return &evaluator.PrintStatement{Expression: expr}, nil
+}
+
+// blockStmt          → "{" declaration* "}" ;
+
+func (p *parser) blockStatement() (*evaluator.BlockStatement, *ParserError) {
+	statements := make([]evaluator.Statement, 0)
+	for !p.isAtEnd() && p.peek().Type != lexer.TokenTypeRightBrace {
+		statement, err := p.statement()
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, statement)
+	}
+	if !p.advanceMatch(lexer.TokenTypeRightBrace) {
+		return nil, NewParserError("Expected right brace after block statement")
+	}
+	return &evaluator.BlockStatement{Statements: statements}, nil
 }
 
 // exprStmt       → expression ";" ;

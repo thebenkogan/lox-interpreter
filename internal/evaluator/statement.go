@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 type Statement interface {
@@ -62,5 +63,29 @@ func (e *VarStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {
 		value = result
 	}
 	env.Set(e.Name, value)
+	return nil
+}
+
+type BlockStatement struct {
+	Statements []Statement
+}
+
+func (e *BlockStatement) String() string {
+	statements := make([]string, 0, len(e.Statements))
+	for _, stmt := range e.Statements {
+		statements = append(statements, stmt.String()+";")
+	}
+	return fmt.Sprintf("(block %s)", strings.Join(statements, " "))
+}
+
+func (e *BlockStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	env.CreateScope()
+	defer env.ExitScope()
+	for _, stmt := range e.Statements {
+		err := stmt.Execute(env, output)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
