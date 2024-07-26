@@ -3,20 +3,33 @@ package evaluator
 import "fmt"
 
 type Environment struct {
-	mem map[string]any
+	scopes []map[string]any
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{mem: make(map[string]any)}
+	initialScope := make(map[string]any)
+	return &Environment{scopes: []map[string]any{initialScope}}
 }
 
 func (e *Environment) Get(name string) (any, *RuntimeError) {
-	if val, ok := e.mem[name]; ok {
-		return val, nil
+	for i := len(e.scopes) - 1; i >= 0; i-- {
+		scope := e.scopes[i]
+		if val, ok := scope[name]; ok {
+			return val, nil
+		}
 	}
 	return nil, NewRuntimeError(fmt.Sprintf("Undefined variable: %q", name))
 }
 
 func (e *Environment) Set(name string, val any) {
-	e.mem[name] = val
+	scope := e.scopes[len(e.scopes)-1]
+	scope[name] = val
+}
+
+func (e *Environment) CreateScope() {
+	e.scopes = append(e.scopes, make(map[string]any))
+}
+
+func (e *Environment) ExitScope() {
+	e.scopes = e.scopes[:len(e.scopes)-1]
 }
