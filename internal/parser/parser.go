@@ -228,7 +228,7 @@ func (p *parser) logicOr() (evaluator.Expression, *ParserError) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &evaluator.ExpressionLogicOr{Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: evaluator.BinaryOperatorOr, Left: expr, Right: right}
 	}
 	return expr, nil
 }
@@ -245,7 +245,7 @@ func (p *parser) logicAnd() (evaluator.Expression, *ParserError) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &evaluator.ExpressionLogicAnd{Left: expr, Right: right}
+		expr = &evaluator.ExpressionBinary{Operator: evaluator.BinaryOperatorAnd, Left: expr, Right: right}
 	}
 	return expr, nil
 }

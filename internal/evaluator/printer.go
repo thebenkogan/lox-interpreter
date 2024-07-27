@@ -56,6 +56,10 @@ func (e *ExpressionBinary) String() string {
 		op = "=="
 	case BinaryOperatorNotEqual:
 		op = "!="
+	case BinaryOperatorAnd:
+		op = "and"
+	case BinaryOperatorOr:
+		op = "or"
 	}
 	return fmt.Sprintf("(%s %s %s)", op, e.Left.String(), e.Right.String())
 }
@@ -66,12 +70,4 @@ func (e *ExpressionVariable) String() string {
 
 func (e *ExpressionAssignment) String() string {
 	return fmt.Sprintf("%s = %s", e.Name, e.Expr.String())
-}
-
-func (e *ExpressionLogicOr) String() string {
-	return fmt.Sprintf("(or %s %s)", e.Left.String(), e.Right.String())
-}
-
-func (e *ExpressionLogicAnd) String() string {
-	return fmt.Sprintf("(and %s %s)", e.Left.String(), e.Right.String())
 }

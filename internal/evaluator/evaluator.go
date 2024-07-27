@@ -43,6 +43,12 @@ func getNums(left, right any) (float64, float64, *RuntimeError) {
 }
 
 func (e *ExpressionBinary) Evaluate(env *Environment) (any, *RuntimeError) {
+	if e.Operator == BinaryOperatorAnd {
+		return evalAnd(e.Left, e.Right, env)
+	}
+	if e.Operator == BinaryOperatorOr {
+		return evalOr(e.Left, e.Right, env)
+	}
 	left, err := e.Left.Evaluate(env)
 	if err != nil {
 		return nil, err
@@ -116,6 +122,42 @@ func (e *ExpressionBinary) Evaluate(env *Environment) (any, *RuntimeError) {
 	panic("Unknown binary operator")
 }
 
+func evalOr(left, right Expression, env *Environment) (any, *RuntimeError) {
+	leftVal, err := left.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if toBool(leftVal) {
+		return leftVal, nil
+	}
+	rightVal, err := right.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if toBool(rightVal) {
+		return rightVal, nil
+	}
+	return false, nil
+}
+
+func evalAnd(left, right Expression, env *Environment) (any, *RuntimeError) {
+	leftVal, err := left.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if !toBool(leftVal) {
+		return false, nil
+	}
+	rightVal, err := right.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if !toBool(rightVal) {
+		return false, nil
+	}
+	return rightVal, nil
+}
+
 func (e *ExpressionVariable) Evaluate(env *Environment) (any, *RuntimeError) {
 	return env.Get(e.Name)
 }
@@ -127,40 +169,4 @@ func (e *ExpressionAssignment) Evaluate(env *Environment) (any, *RuntimeError) {
 	}
 	env.Set(e.Name, result)
 	return result, nil
-}
-
-func (e *ExpressionLogicOr) Evaluate(env *Environment) (any, *RuntimeError) {
-	left, err := e.Left.Evaluate(env)
-	if err != nil {
-		return nil, err
-	}
-	if toBool(left) {
-		return left, nil
-	}
-	right, err := e.Right.Evaluate(env)
-	if err != nil {
-		return nil, err
-	}
-	if toBool(right) {
-		return right, nil
-	}
-	return false, nil
-}
-
-func (e *ExpressionLogicAnd) Evaluate(env *Environment) (any, *RuntimeError) {
-	left, err := e.Left.Evaluate(env)
-	if err != nil {
-		return nil, err
-	}
-	if !toBool(left) {
-		return false, nil
-	}
-	right, err := e.Right.Evaluate(env)
-	if err != nil {
-		return nil, err
-	}
-	if !toBool(right) {
-		return false, nil
-	}
-	return right, nil
 }

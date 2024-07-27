@@ -38,6 +38,8 @@ const (
 	BinaryOperatorLessEqual
 	BinaryOperatorEqual
 	BinaryOperatorNotEqual
+	BinaryOperatorAnd
+	BinaryOperatorOr
 )
 
 type ExpressionBinary struct {
@@ -53,14 +55,4 @@ type ExpressionVariable struct {
 type ExpressionAssignment struct {
 	Name string
 	Expr Expression
-}
-
-type ExpressionLogicOr struct {
-	Left  Expression
-	Right Expression
-}
-
-type ExpressionLogicAnd struct {
-	Left  Expression
-	Right Expression
 }
