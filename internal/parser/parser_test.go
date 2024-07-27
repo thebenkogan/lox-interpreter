@@ -335,6 +335,26 @@ func TestParseStatement(t *testing.T) {
 			program:     "if (true) {2 + 3;} else 2 + 3;",
 			expectError: true,
 		},
+		{
+			name:     "while statement",
+			program:  "while (true) {2 + 3;}",
+			expected: "while (true) then (block (expr (+ 2.0 3.0));)",
+		},
+		{
+			name:        "while statement no parens",
+			program:     "while true {2 + 3;}",
+			expectError: true,
+		},
+		{
+			name:        "while statement unclosed parens",
+			program:     "while (true {2 + 3;}",
+			expectError: true,
+		},
+		{
+			name:        "while statement no block",
+			program:     "while (true) 2 + 3;",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

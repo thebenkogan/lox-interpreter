@@ -21,9 +21,20 @@ func (e *Environment) Get(name string) (any, *RuntimeError) {
 	return nil, NewRuntimeError(fmt.Sprintf("Undefined variable: %q", name))
 }
 
-func (e *Environment) Set(name string, val any) {
+func (e *Environment) Declare(name string, val any) {
 	scope := e.scopes[len(e.scopes)-1]
 	scope[name] = val
+}
+
+func (e *Environment) Set(name string, val any) *RuntimeError {
+	for i := len(e.scopes) - 1; i >= 0; i-- {
+		scope := e.scopes[i]
+		if _, ok := scope[name]; ok {
+			scope[name] = val
+			return nil
+		}
+	}
+	return NewRuntimeError(fmt.Sprintf("Undefined variable: %q", name))
 }
 
 func (e *Environment) CreateScope() {

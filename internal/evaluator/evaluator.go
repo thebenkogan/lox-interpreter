@@ -167,6 +167,8 @@ func (e *ExpressionAssignment) Evaluate(env *Environment) (any, *RuntimeError) {
 	if err != nil {
 		return nil, err
 	}
-	env.Set(e.Name, result)
+	if err := env.Set(e.Name, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }

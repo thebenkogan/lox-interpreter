@@ -147,9 +147,9 @@ func TestEvaluator(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "assignment",
-			program:  "a = 5",
-			expected: float64(5),
+			name:        "assignment without declaration",
+			program:     "a = 5",
+			expectError: true,
 		},
 		{
 			name:     "logic or",

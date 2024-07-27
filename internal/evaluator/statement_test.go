@@ -52,6 +52,11 @@ func TestExecuteStatements(t *testing.T) {
 			expected: "123\n456\n",
 		},
 		{
+			name:        "assignment to uninitialized variable",
+			program:     "a = 456; print a;",
+			expectError: true,
+		},
+		{
 			name:     "block statement",
 			program:  "{var b = 5; print b + 3;}",
 			expected: "8\n",
@@ -85,6 +90,11 @@ func TestExecuteStatements(t *testing.T) {
 			name:     "if statement false condition does nothing",
 			program:  "if (false) {print 1;}",
 			expected: "",
+		},
+		{
+			name:     "while statement",
+			program:  "var i = 0; while (i < 3) {print i; i = i + 1;}",
+			expected: "0\n1\n2\n",
 		},
 	}
 

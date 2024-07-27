@@ -62,7 +62,7 @@ func (e *VarStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {
 		}
 		value = result
 	}
-	env.Set(e.Name, value)
+	env.Declare(e.Name, value)
 	return nil
 }
 
@@ -113,6 +113,31 @@ func (e *IfStatement) Execute(env *Environment, output io.Writer) *RuntimeError 
 		return e.Then.Execute(env, output)
 	} else if e.Else != nil {
 		return e.Else.Execute(env, output)
+	}
+	return nil
+}
+
+type WhileStatement struct {
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (e *WhileStatement) String() string {
+	return fmt.Sprintf("while (%s) then %s", e.Condition.String(), e.Body.String())
+}
+
+func (e *WhileStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	for {
+		condition, err := e.Condition.Evaluate(env)
+		if err != nil {
+			return err
+		}
+		if !toBool(condition) {
+			break
+		}
+		if err := e.Body.Execute(env, output); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -10,24 +10,36 @@ func TestEnvironment(t *testing.T) {
 		t.Errorf("Expected error, got nil")
 	}
 
-	env.Set("a", 1)
+	if env.Set("a", 1) == nil {
+		t.Errorf("Expected error, got nil")
+	}
+
+	env.Declare("a", 1)
 	assertEnv(t, env, "a", 1)
 
-	env.Set("b", 2)
+	if env.Set("a", 2) != nil {
+		t.Errorf("Expected no error for assigning to a")
+	}
+
+	env.Declare("b", 2)
 	assertEnv(t, env, "b", 2)
 
-	env.Set("b", 3)
+	env.Declare("b", 3)
 	assertEnv(t, env, "b", 3)
 
 	env.CreateScope()
 
 	assertEnv(t, env, "b", 3)
 
-	env.Set("c", 4)
+	env.Declare("c", 4)
 	assertEnv(t, env, "c", 4)
 
-	env.Set("b", 5)
+	env.Declare("b", 5)
 	assertEnv(t, env, "b", 5)
+
+	if env.Set("a", 5) != nil {
+		t.Errorf("Expected no error for assigning to a")
+	}
 
 	env.ExitScope()
 
@@ -37,6 +49,8 @@ func TestEnvironment(t *testing.T) {
 	}
 
 	assertEnv(t, env, "b", 3)
+
+	assertEnv(t, env, "a", 5)
 }
 
 func assertEnv(t *testing.T, env *Environment, key string, value any) {
