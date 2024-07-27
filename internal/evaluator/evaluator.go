@@ -128,3 +128,39 @@ func (e *ExpressionAssignment) Evaluate(env *Environment) (any, *RuntimeError) {
 	env.Set(e.Name, result)
 	return result, nil
 }
+
+func (e *ExpressionLogicOr) Evaluate(env *Environment) (any, *RuntimeError) {
+	left, err := e.Left.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if toBool(left) {
+		return left, nil
+	}
+	right, err := e.Right.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if toBool(right) {
+		return right, nil
+	}
+	return false, nil
+}
+
+func (e *ExpressionLogicAnd) Evaluate(env *Environment) (any, *RuntimeError) {
+	left, err := e.Left.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if !toBool(left) {
+		return false, nil
+	}
+	right, err := e.Right.Evaluate(env)
+	if err != nil {
+		return nil, err
+	}
+	if !toBool(right) {
+		return false, nil
+	}
+	return right, nil
+}

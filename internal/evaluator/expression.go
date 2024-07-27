@@ -54,3 +54,13 @@ type ExpressionAssignment struct {
 	Name string
 	Expr Expression
 }
+
+type ExpressionLogicOr struct {
+	Left  Expression
+	Right Expression
+}
+
+type ExpressionLogicAnd struct {
+	Left  Expression
+	Right Expression
+}

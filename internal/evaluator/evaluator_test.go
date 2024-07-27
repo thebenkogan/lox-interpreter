@@ -151,6 +151,26 @@ func TestEvaluator(t *testing.T) {
 			program:  "a = 5",
 			expected: float64(5),
 		},
+		{
+			name:     "logic or",
+			program:  "true or false",
+			expected: true,
+		},
+		{
+			name:     "logic or convert to truthy",
+			program:  "false or 2",
+			expected: float64(2),
+		},
+		{
+			name:     "logic and",
+			program:  "true and false",
+			expected: false,
+		},
+		{
+			name:     "logic and convert to falsy",
+			program:  "\"hello\" and 2",
+			expected: float64(2),
+		},
 	}
 
 	for _, test := range tests {

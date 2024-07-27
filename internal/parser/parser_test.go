@@ -195,6 +195,16 @@ func TestParseExpression(t *testing.T) {
 			program:  "((3.0 + 5.1) * 7) >= (-3.1 / -5.5) < (true != false) != \"hello world\" == nil",
 			expected: "(== (!= (< (>= (group (* (group (+ 3.0 5.1)) 7.0)) (group (/ (- 3.1) (- 5.5)))) (group (!= true false))) hello world) nil)",
 		},
+		{
+			name:     "logic or",
+			program:  "true or false",
+			expected: "(or true false)",
+		},
+		{
+			name:     "logic and",
+			program:  "true and false",
+			expected: "(and true false)",
+		},
 	}
 
 	for _, test := range tests {

@@ -178,7 +178,9 @@ func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserE
 
 // expression     → assignment ;
 // assignment     → IDENTIFIER "=" assignment
-//                | equality ;
+//                | logic_or ;
+// logic_or       → logic_and ( "or" logic_and )* ;
+// logic_and      → equality ( "and" equality )* ;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
@@ -193,10 +195,10 @@ func (p *parser) expression() (evaluator.Expression, *ParserError) {
 }
 
 // assignment     → IDENTIFIER "=" assignment
-//                | equality ;
+//                | logic_or ;
 
 func (p *parser) assignment() (evaluator.Expression, *ParserError) {
-	expr, err := p.equality()
+	expr, err := p.logicOr()
 	if err != nil {
 		return nil, err
 	}
@@ -210,6 +212,40 @@ func (p *parser) assignment() (evaluator.Expression, *ParserError) {
 			return nil, err
 		}
 		return &evaluator.ExpressionAssignment{Name: variable.Name, Expr: right}, nil
+	}
+	return expr, nil
+}
+
+// logic_or       → logic_and ( "or" logic_and )* ;
+
+func (p *parser) logicOr() (evaluator.Expression, *ParserError) {
+	expr, err := p.logicAnd()
+	if err != nil {
+		return nil, err
+	}
+	for p.advanceMatch(lexer.TokenTypeOr) {
+		right, err := p.logicAnd()
+		if err != nil {
+			return nil, err
+		}
+		expr = &evaluator.ExpressionLogicOr{Left: expr, Right: right}
+	}
+	return expr, nil
+}
+
+// logic_and      → equality ( "and" equality )* ;
+
+func (p *parser) logicAnd() (evaluator.Expression, *ParserError) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+	for p.advanceMatch(lexer.TokenTypeAnd) {
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+		expr = &evaluator.ExpressionLogicAnd{Left: expr, Right: right}
 	}
 	return expr, nil
 }
