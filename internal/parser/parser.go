@@ -65,6 +65,8 @@ func (p *parser) statement() (evaluator.Statement, *ParserError) {
 	switch {
 	case p.advanceMatch(lexer.TokenTypeVar):
 		return p.varStatement()
+	case p.advanceMatch(lexer.TokenTypeIf):
+		return p.ifStatement()
 	case p.advanceMatch(lexer.TokenTypePrint):
 		return p.printStatement()
 	case p.advanceMatch(lexer.TokenTypeLeftBrace):
@@ -95,6 +97,40 @@ func (p *parser) varStatement() (*evaluator.VarStatement, *ParserError) {
 	}
 
 	return varStmt, nil
+}
+
+// ifStmt         → "if" "(" expression ")" blockStmt
+//                ( "else" blockStmt )? ;
+
+func (p *parser) ifStatement() (*evaluator.IfStatement, *ParserError) {
+	if !p.advanceMatch(lexer.TokenTypeLeftParen) {
+		return nil, NewParserError("Expected '(' after 'if'")
+	}
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	if !p.advanceMatch(lexer.TokenTypeRightParen) {
+		return nil, NewParserError("Expected ')' after if condition")
+	}
+	if !p.advanceMatch(lexer.TokenTypeLeftBrace) {
+		return nil, NewParserError("Expected '{' after if condition")
+	}
+	then, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+	var elseStmt *evaluator.BlockStatement
+	if p.advanceMatch(lexer.TokenTypeElse) {
+		if !p.advanceMatch(lexer.TokenTypeLeftBrace) {
+			return nil, NewParserError("Expected '{' after else")
+		}
+		elseStmt, err = p.blockStatement()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &evaluator.IfStatement{Condition: condition, Then: then, Else: elseStmt}, nil
 }
 
 // printStmt      → "print" expression ";" ;

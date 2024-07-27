@@ -89,3 +89,30 @@ func (e *BlockStatement) Execute(env *Environment, output io.Writer) *RuntimeErr
 	}
 	return nil
 }
+
+type IfStatement struct {
+	Condition Expression
+	Then      *BlockStatement
+	Else      *BlockStatement
+}
+
+func (e *IfStatement) String() string {
+	if e.Else == nil {
+		return fmt.Sprintf("if (%s) then %s", e.Condition.String(), e.Then.String())
+	}
+	return fmt.Sprintf("if (%s) then %s else %s", e.Condition.String(), e.Then.String(), e.Else.String())
+}
+
+func (e *IfStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	condition, err := e.Condition.Evaluate(env)
+	if err != nil {
+		return err
+	}
+	test := toBool(condition)
+	if test {
+		return e.Then.Execute(env, output)
+	} else if e.Else != nil {
+		return e.Else.Execute(env, output)
+	}
+	return nil
+}

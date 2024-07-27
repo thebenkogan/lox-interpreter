@@ -290,6 +290,41 @@ func TestParseStatement(t *testing.T) {
 			program:     "{2 + 3; var b = 5}",
 			expectError: true,
 		},
+		{
+			name:     "if statement",
+			program:  "if (true) {2 + 3;}",
+			expected: "if (true) then (block (expr (+ 2.0 3.0));)",
+		},
+		{
+			name:     "if statement with else",
+			program:  "if (true) {2 + 3;} else {4 + 5;}",
+			expected: "if (true) then (block (expr (+ 2.0 3.0));) else (block (expr (+ 4.0 5.0));)",
+		},
+		{
+			name:        "if statement no block statement",
+			program:     "if (true) 2 + 3;",
+			expectError: true,
+		},
+		{
+			name:        "if statement no parens",
+			program:     "if true {2 + 3;}",
+			expectError: true,
+		},
+		{
+			name:        "if statement unclosed parens",
+			program:     "if (true {2 + 3;}",
+			expectError: true,
+		},
+		{
+			name:        "if statement empty else",
+			program:     "if (true) {2 + 3;} else",
+			expectError: true,
+		},
+		{
+			name:        "if statement no block after else",
+			program:     "if (true) {2 + 3;} else 2 + 3;",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {
