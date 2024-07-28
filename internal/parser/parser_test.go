@@ -358,22 +358,22 @@ func TestParseStatement(t *testing.T) {
 		{
 			name:     "for statement",
 			program:  "for (;;) {print 1;}",
-			expected: "for (; ; ) (block print 1.0;)",
+			expected: "(block while (true) then (block print 1.0;);)",
 		},
 		{
 			name:     "for statement with initializer",
 			program:  "for (var a = 1;;) {print a;}",
-			expected: "for (var a = 1.0; ; ) (block print a;)",
+			expected: "(block var a = 1.0; while (true) then (block print a;);)",
 		},
 		{
 			name:     "for statement with condition",
 			program:  "for (; a < 3;) {print a;}",
-			expected: "for (; (< a 3.0); ) (block print a;)",
+			expected: "(block while ((< a 3.0)) then (block print a;);)",
 		},
 		{
 			name:     "for statement with increment",
 			program:  "for (var a = 1; a < 3; a = a + 1) {print a;}",
-			expected: "for (var a = 1.0; (< a 3.0); (= a (+ a 1.0))) (block print a;)",
+			expected: "(block var a = 1.0; while ((< a 3.0)) then (block print a; (expr (= a (+ a 1.0))););)",
 		},
 		{
 			name:        "for statement no parens",

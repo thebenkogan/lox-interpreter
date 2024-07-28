@@ -106,8 +106,9 @@ func (p *parser) varStatement() (*evaluator.VarStatement, *ParserError) {
 // forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
 //                  expression? ";"
 //                  expression? ")" blockStmt ;
+// desugar to block statement with initializer and while statement
 
-func (p *parser) forStatement() (*evaluator.ForStatement, *ParserError) {
+func (p *parser) forStatement() (*evaluator.BlockStatement, *ParserError) {
 	if !p.advanceMatch(lexer.TokenTypeLeftParen) {
 		return nil, NewParserError("Expected '(' after 'for'")
 	}
@@ -158,8 +159,20 @@ func (p *parser) forStatement() (*evaluator.ForStatement, *ParserError) {
 	if err != nil {
 		return nil, err
 	}
+	if increment != nil {
+		body.Statements = append(body.Statements, &evaluator.ExpressionStatement{Expression: increment})
+	}
 
-	return &evaluator.ForStatement{Init: init, Condition: condition, Increment: increment, Body: body}, nil
+	whileStmt := &evaluator.WhileStatement{Condition: condition, Body: body}
+	if condition == nil {
+		whileStmt.Condition = &evaluator.ExpressionLiteral{Literal: true}
+	}
+	blockStmts := make([]evaluator.Statement, 0)
+	if init != nil {
+		blockStmts = append(blockStmts, init)
+	}
+	blockStmts = append(blockStmts, whileStmt)
+	return &evaluator.BlockStatement{Statements: blockStmts}, nil
 }
 
 // ifStmt         → "if" "(" expression ")" blockStmt
