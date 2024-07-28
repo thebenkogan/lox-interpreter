@@ -54,7 +54,7 @@ func (e *VarStatement) String() string {
 }
 
 func (e *VarStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {
-	var value any = nil
+	var value Value = &ValueLiteral{Literal: nil}
 	if e.Expr != nil {
 		result, err := e.Expr.Evaluate(env)
 		if err != nil {
@@ -108,8 +108,7 @@ func (e *IfStatement) Execute(env *Environment, output io.Writer) *RuntimeError 
 	if err != nil {
 		return err
 	}
-	test := toBool(condition)
-	if test {
+	if condition.Bool() {
 		return e.Then.Execute(env, output)
 	} else if e.Else != nil {
 		return e.Else.Execute(env, output)
@@ -132,7 +131,7 @@ func (e *WhileStatement) Execute(env *Environment, output io.Writer) *RuntimeErr
 		if err != nil {
 			return err
 		}
-		if !toBool(condition) {
+		if !condition.Bool() {
 			break
 		}
 		if err := e.Body.Execute(env, output); err != nil {
@@ -140,4 +139,14 @@ func (e *WhileStatement) Execute(env *Environment, output io.Writer) *RuntimeErr
 		}
 	}
 	return nil
+}
+
+type FunStatement struct {
+	Name   string
+	Body   *BlockStatement
+	Params []string
+}
+
+func (e *FunStatement) String() string {
+	return fmt.Sprintf("fun %s(%s) %s", e.Name, strings.Join(e.Params, ", "), e.Body.String())
 }

@@ -2,7 +2,7 @@ package evaluator
 
 type Expression interface {
 	String() string
-	Evaluate(env *Environment) (any, *RuntimeError)
+	Evaluate(env *Environment) (Value, *RuntimeError)
 }
 
 type ExpressionLiteral struct {

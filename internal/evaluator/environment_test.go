@@ -2,6 +2,10 @@ package evaluator
 
 import "testing"
 
+func value(v any) Value {
+	return &ValueLiteral{Literal: v}
+}
+
 func TestEnvironment(t *testing.T) {
 	env := NewEnvironment()
 
@@ -10,34 +14,34 @@ func TestEnvironment(t *testing.T) {
 		t.Errorf("Expected error, got nil")
 	}
 
-	if env.Set("a", 1) == nil {
+	if env.Set("a", value(1)) == nil {
 		t.Errorf("Expected error, got nil")
 	}
 
-	env.Declare("a", 1)
+	env.Declare("a", value(1))
 	assertEnv(t, env, "a", 1)
 
-	if env.Set("a", 2) != nil {
+	if env.Set("a", value(2)) != nil {
 		t.Errorf("Expected no error for assigning to a")
 	}
 
-	env.Declare("b", 2)
+	env.Declare("b", value(2))
 	assertEnv(t, env, "b", 2)
 
-	env.Declare("b", 3)
+	env.Declare("b", value(3))
 	assertEnv(t, env, "b", 3)
 
 	env.CreateScope()
 
 	assertEnv(t, env, "b", 3)
 
-	env.Declare("c", 4)
+	env.Declare("c", value(4))
 	assertEnv(t, env, "c", 4)
 
-	env.Declare("b", 5)
+	env.Declare("b", value(5))
 	assertEnv(t, env, "b", 5)
 
-	if env.Set("a", 5) != nil {
+	if env.Set("a", value(5)) != nil {
 		t.Errorf("Expected no error for assigning to a")
 	}
 
@@ -59,7 +63,8 @@ func assertEnv(t *testing.T, env *Environment, key string, value any) {
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
-	if found != value {
+	val := found.(*ValueLiteral)
+	if val.Literal != value {
 		t.Errorf("Expected %v for key %s, got %v", value, key, found)
 	}
 }

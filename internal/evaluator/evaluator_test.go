@@ -189,7 +189,11 @@ func TestEvaluator(t *testing.T) {
 				t.Errorf("Expected no error, got %v", err)
 				return
 			}
-			if result != test.expected {
+			if err != nil {
+				return
+			}
+			val := result.(*evaluator.ValueLiteral)
+			if val.Literal != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
 			}
 		})
