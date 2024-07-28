@@ -79,10 +79,9 @@ func (e *BlockStatement) String() string {
 }
 
 func (e *BlockStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
-	env.CreateScope()
-	defer env.ExitScope()
+	innerEnv := env.CreateScope()
 	for _, stmt := range e.Statements {
-		err := stmt.Execute(env, output)
+		err := stmt.Execute(innerEnv, output)
 		if err != nil {
 			return err
 		}

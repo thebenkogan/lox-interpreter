@@ -31,21 +31,19 @@ func TestEnvironment(t *testing.T) {
 	env.Declare("b", value(3))
 	assertEnv(t, env, "b", 3)
 
-	env.CreateScope()
+	innerEnv := env.CreateScope()
 
-	assertEnv(t, env, "b", 3)
+	assertEnv(t, innerEnv, "b", 3)
 
-	env.Declare("c", value(4))
-	assertEnv(t, env, "c", 4)
+	innerEnv.Declare("c", value(4))
+	assertEnv(t, innerEnv, "c", 4)
 
-	env.Declare("b", value(5))
-	assertEnv(t, env, "b", 5)
+	innerEnv.Declare("b", value(5))
+	assertEnv(t, innerEnv, "b", 5)
 
-	if env.Set("a", value(5)) != nil {
+	if innerEnv.Set("a", value(5)) != nil {
 		t.Errorf("Expected no error for assigning to a")
 	}
-
-	env.ExitScope()
 
 	_, err = env.Get("c")
 	if err == nil {
