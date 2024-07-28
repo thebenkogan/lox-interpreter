@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 func (e *ExpressionLiteral) String() string {
@@ -70,4 +71,16 @@ func (e *ExpressionVariable) String() string {
 
 func (e *ExpressionAssignment) String() string {
 	return fmt.Sprintf("(= %s %s)", e.Name, e.Expr.String())
+}
+
+func (e *ExpressionCall) String() string {
+	callee := e.Callee.String()
+	if len(e.Args) == 0 {
+		return fmt.Sprintf("%s()", callee)
+	}
+	args := make([]string, 0, len(e.Args))
+	for _, arg := range e.Args {
+		args = append(args, arg.String())
+	}
+	return fmt.Sprintf("%s(%s)", callee, strings.Join(args, ", "))
 }

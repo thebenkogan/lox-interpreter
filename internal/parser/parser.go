@@ -325,7 +325,8 @@ func (p *parser) expressionStatement() (*evaluator.ExpressionStatement, *ParserE
 // term           → factor ( ( "-" | "+" ) factor )* ;
 // factor         → unary ( ( "/" | "*" ) unary )* ;
 // unary          → ( "!" | "-" ) unary
-//                | primary ;
+//                | call ;
+// call           → primary ( "(" arguments? ")" )* ; (arguments → expression ( "," expression )* ;)
 // primary        → NUMBER | STRING | "true" | "false" | "nil"
 //                | "(" expression ")" ;
 
@@ -495,7 +496,41 @@ func (p *parser) unary() (evaluator.Expression, *ParserError) {
 		}
 		return &evaluator.ExpressionUnary{Operator: operator, Child: child}, nil
 	}
-	return p.primary()
+	return p.call()
+}
+
+// call           → primary ( "(" arguments? ")" )* ; (arguments → expression ( "," expression )* ;)
+
+func (p *parser) call() (evaluator.Expression, *ParserError) {
+	callee, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.advanceMatch(lexer.TokenTypeLeftParen) {
+		args := make([]evaluator.Expression, 0)
+		for p.peek().Type != lexer.TokenTypeRightParen {
+			arg, err := p.expression()
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, arg)
+			if !p.advanceMatch(lexer.TokenTypeComma) {
+				break
+			}
+		}
+		if !p.advanceMatch(lexer.TokenTypeRightParen) {
+			return nil, NewParserError("Expected ')' after call arguments.")
+		}
+		_, isVar := callee.(*evaluator.ExpressionVariable)
+		_, isCall := callee.(*evaluator.ExpressionCall)
+		if !isVar && !isCall {
+			return nil, NewParserError("Callee must be an identifier or function call.")
+		}
+		callee = &evaluator.ExpressionCall{Callee: callee, Args: args}
+	}
+
+	return callee, nil
 }
 
 // primary        → NUMBER | STRING | "true" | "false" | "nil"

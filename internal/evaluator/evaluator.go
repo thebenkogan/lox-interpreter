@@ -1,15 +1,17 @@
 package evaluator
 
-func (e *ExpressionLiteral) Evaluate(env *Environment) (Value, *RuntimeError) {
+import "io"
+
+func (e *ExpressionLiteral) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
 	return &ValueLiteral{Literal: e.Literal}, nil
 }
 
-func (e *ExpressionGroup) Evaluate(env *Environment) (Value, *RuntimeError) {
-	return e.Child.Evaluate(env)
+func (e *ExpressionGroup) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
+	return e.Child.Evaluate(env, output)
 }
 
-func evaluateToLiteral(exp Expression, env *Environment) (*ValueLiteral, *RuntimeError) {
-	val, err := exp.Evaluate(env)
+func evaluateToLiteral(exp Expression, env *Environment, output io.Writer) (*ValueLiteral, *RuntimeError) {
+	val, err := exp.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -20,8 +22,8 @@ func evaluateToLiteral(exp Expression, env *Environment) (*ValueLiteral, *Runtim
 	return literal, nil
 }
 
-func (e *ExpressionUnary) Evaluate(env *Environment) (Value, *RuntimeError) {
-	child, err := e.Child.Evaluate(env)
+func (e *ExpressionUnary) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
+	child, err := e.Child.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -54,18 +56,18 @@ func getNums(left, right *ValueLiteral) (float64, float64, *RuntimeError) {
 	return leftNum, rightNum, nil
 }
 
-func (e *ExpressionBinary) Evaluate(env *Environment) (Value, *RuntimeError) {
+func (e *ExpressionBinary) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
 	if e.Operator == BinaryOperatorAnd {
-		return evalAnd(e.Left, e.Right, env)
+		return evalAnd(e.Left, e.Right, env, output)
 	}
 	if e.Operator == BinaryOperatorOr {
-		return evalOr(e.Left, e.Right, env)
+		return evalOr(e.Left, e.Right, env, output)
 	}
-	left, err := evaluateToLiteral(e.Left, env)
+	left, err := evaluateToLiteral(e.Left, env, output)
 	if err != nil {
 		return nil, err
 	}
-	right, err := evaluateToLiteral(e.Right, env)
+	right, err := evaluateToLiteral(e.Right, env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -134,15 +136,15 @@ func (e *ExpressionBinary) Evaluate(env *Environment) (Value, *RuntimeError) {
 	panic("Unknown binary operator")
 }
 
-func evalOr(left, right Expression, env *Environment) (Value, *RuntimeError) {
-	leftVal, err := left.Evaluate(env)
+func evalOr(left, right Expression, env *Environment, output io.Writer) (Value, *RuntimeError) {
+	leftVal, err := left.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
 	if leftVal.Bool() {
 		return leftVal, nil
 	}
-	rightVal, err := right.Evaluate(env)
+	rightVal, err := right.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -152,15 +154,15 @@ func evalOr(left, right Expression, env *Environment) (Value, *RuntimeError) {
 	return &ValueLiteral{Literal: false}, nil
 }
 
-func evalAnd(left, right Expression, env *Environment) (Value, *RuntimeError) {
-	leftVal, err := left.Evaluate(env)
+func evalAnd(left, right Expression, env *Environment, output io.Writer) (Value, *RuntimeError) {
+	leftVal, err := left.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
 	if !leftVal.Bool() {
 		return &ValueLiteral{Literal: false}, nil
 	}
-	rightVal, err := right.Evaluate(env)
+	rightVal, err := right.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -170,12 +172,12 @@ func evalAnd(left, right Expression, env *Environment) (Value, *RuntimeError) {
 	return rightVal, nil
 }
 
-func (e *ExpressionVariable) Evaluate(env *Environment) (Value, *RuntimeError) {
+func (e *ExpressionVariable) Evaluate(env *Environment, _ io.Writer) (Value, *RuntimeError) {
 	return env.Get(e.Name)
 }
 
-func (e *ExpressionAssignment) Evaluate(env *Environment) (Value, *RuntimeError) {
-	result, err := e.Expr.Evaluate(env)
+func (e *ExpressionAssignment) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
+	result, err := e.Expr.Evaluate(env, output)
 	if err != nil {
 		return nil, err
 	}
@@ -183,4 +185,39 @@ func (e *ExpressionAssignment) Evaluate(env *Environment) (Value, *RuntimeError)
 		return nil, err
 	}
 	return result, nil
+}
+
+func (e *ExpressionCall) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
+	callee, err := e.Callee.Evaluate(env, output)
+	if err != nil {
+		return nil, err
+	}
+	function, ok := callee.(*ValueClosure)
+	if !ok {
+		return nil, NewRuntimeError("Callee must be a function.")
+	}
+
+	args := make([]Value, 0, len(e.Args))
+	for _, arg := range e.Args {
+		argVal, err := arg.Evaluate(env, output)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, argVal)
+	}
+
+	if len(args) != len(function.Params) {
+		return nil, NewRuntimeError("Incorrect number of arguments.")
+	}
+
+	functionEnv := function.Env.CreateScope()
+	for i, arg := range args {
+		functionEnv.Declare(function.Params[i], arg)
+	}
+
+	if err := function.Body.Execute(functionEnv, output); err != nil {
+		return nil, err
+	}
+
+	return &ValueLiteral{Literal: nil}, nil
 }

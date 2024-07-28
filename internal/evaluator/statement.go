@@ -19,8 +19,8 @@ func (e *ExpressionStatement) String() string {
 	return fmt.Sprintf("(expr %s)", e.Expression.String())
 }
 
-func (e *ExpressionStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {
-	_, err := e.Expression.Evaluate(env)
+func (e *ExpressionStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	_, err := e.Expression.Evaluate(env, output)
 	return err
 }
 
@@ -33,7 +33,7 @@ func (e *PrintStatement) String() string {
 }
 
 func (e *PrintStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
-	result, err := e.Expression.Evaluate(env)
+	result, err := e.Expression.Evaluate(env, output)
 	if err != nil {
 		return err
 	}
@@ -53,10 +53,10 @@ func (e *VarStatement) String() string {
 	return fmt.Sprintf("var %s = %s", e.Name, e.Expr.String())
 }
 
-func (e *VarStatement) Execute(env *Environment, _ io.Writer) *RuntimeError {
+func (e *VarStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
 	var value Value = &ValueLiteral{Literal: nil}
 	if e.Expr != nil {
-		result, err := e.Expr.Evaluate(env)
+		result, err := e.Expr.Evaluate(env, output)
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ func (e *IfStatement) String() string {
 }
 
 func (e *IfStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
-	condition, err := e.Condition.Evaluate(env)
+	condition, err := e.Condition.Evaluate(env, output)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (e *WhileStatement) String() string {
 
 func (e *WhileStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
 	for {
-		condition, err := e.Condition.Evaluate(env)
+		condition, err := e.Condition.Evaluate(env, output)
 		if err != nil {
 			return err
 		}

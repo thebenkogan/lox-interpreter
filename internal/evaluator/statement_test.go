@@ -126,6 +126,36 @@ func TestExecuteStatements(t *testing.T) {
 			program:  "fun add(a, b) {print a + b;} print add;",
 			expected: "<function>\n",
 		},
+		{
+			name:     "fun call",
+			program:  "fun add(a, b) {print a + b;} add(1, 2);",
+			expected: "3\n",
+		},
+		{
+			name:     "fun call references outer scope",
+			program:  "var a = 1; fun add(b) {print a + b;} add(2);",
+			expected: "3\n",
+		},
+		{
+			name:     "fun call no args",
+			program:  "var a = 1; var b = 2; fun add() {print a + b;} add();",
+			expected: "3\n",
+		},
+		{
+			name:     "fun call shadows outer scope",
+			program:  "var a = 7; var b = 8; fun add(a, b) {print a + b;} add(1, 2); print a; print b;",
+			expected: "3\n7\n8\n",
+		},
+		{
+			name:        "fun call incorrect number of args",
+			program:     "fun add(a, b) {print a + b;} add(1);",
+			expectError: true,
+		},
+		{
+			name:        "incorrect callee type",
+			program:     "var add = 1; add();",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

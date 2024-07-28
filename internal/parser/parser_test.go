@@ -205,6 +205,46 @@ func TestParseExpression(t *testing.T) {
 			program:  "true and false",
 			expected: "(and true false)",
 		},
+		{
+			name:     "call",
+			program:  "add(1, 2)",
+			expected: "add(1.0, 2.0)",
+		},
+		{
+			name:     "call no params",
+			program:  "add()",
+			expected: "add()",
+		},
+		{
+			name:     "call multiple invocations",
+			program:  "add()()",
+			expected: "add()()",
+		},
+		{
+			name:     "call multiple invocations with params",
+			program:  "add(1)(2, 3)",
+			expected: "add(1.0)(2.0, 3.0)",
+		},
+		{
+			name:        "call no parens",
+			program:     "add 1, 2",
+			expectError: true,
+		},
+		{
+			name:        "call unclosed parens",
+			program:     "add(1, 2",
+			expectError: true,
+		},
+		{
+			name:        "call no comma between params",
+			program:     "add(1 2)",
+			expectError: true,
+		},
+		{
+			name:        "call invalid callee",
+			program:     "\"hello\"(1, 2)",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

@@ -180,7 +180,7 @@ func TestEvaluator(t *testing.T) {
 			tokens, _ := lexer.Tokenize(buf)
 			statements, _ := parser.Parse(tokens)
 			expr := statements[0].(*evaluator.ExpressionStatement).Expression
-			result, err := expr.Evaluate(env)
+			result, err := expr.Evaluate(env, buf)
 			if test.expectError && err == nil {
 				t.Errorf("Expected error, got nil")
 				return

@@ -1,8 +1,10 @@
 package evaluator
 
+import "io"
+
 type Expression interface {
 	String() string
-	Evaluate(env *Environment) (Value, *RuntimeError)
+	Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError)
 }
 
 type ExpressionLiteral struct {
@@ -55,4 +57,9 @@ type ExpressionVariable struct {
 type ExpressionAssignment struct {
 	Name string
 	Expr Expression
+}
+
+type ExpressionCall struct {
+	Callee Expression
+	Args   []Expression
 }
