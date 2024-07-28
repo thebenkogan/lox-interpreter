@@ -96,6 +96,31 @@ func TestExecuteStatements(t *testing.T) {
 			program:  "var i = 0; while (i < 3) {print i; i = i + 1;}",
 			expected: "0\n1\n2\n",
 		},
+		{
+			name:     "for statement",
+			program:  "for (var a = 1; a < 3; a = a + 1) {print a;}",
+			expected: "1\n2\n",
+		},
+		{
+			name:     "for statement assignment initializer",
+			program:  "var a; for (a = 1; a < 3; a = a + 1) {print a;}",
+			expected: "1\n2\n",
+		},
+		{
+			name:     "for statement no increment",
+			program:  "for (var a = 1; a < 3;) {print a; a = a + 1;}",
+			expected: "1\n2\n",
+		},
+		{
+			name:     "for statement no initializer",
+			program:  "var a = 1; for (; a < 3; a = a + 1) {print a;}",
+			expected: "1\n2\n",
+		},
+		{
+			name:     "for statement should drop initializer out of scope",
+			program:  "var a = 5; for (var a = 1; a < 3; a = a + 1) {print a;} print a;",
+			expected: "1\n2\n5\n",
+		},
 	}
 
 	for _, test := range tests {

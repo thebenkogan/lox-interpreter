@@ -69,5 +69,5 @@ func (e *ExpressionVariable) String() string {
 }
 
 func (e *ExpressionAssignment) String() string {
-	return fmt.Sprintf("%s = %s", e.Name, e.Expr.String())
+	return fmt.Sprintf("(= %s %s)", e.Name, e.Expr.String())
 }

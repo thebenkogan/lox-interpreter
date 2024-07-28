@@ -278,7 +278,7 @@ func TestParseStatement(t *testing.T) {
 		{
 			name:     "assignment",
 			program:  "a = 5;",
-			expected: "(expr a = 5.0)",
+			expected: "(expr (= a 5.0))",
 		},
 		{
 			name:        "assignment to non-variable",
@@ -353,6 +353,51 @@ func TestParseStatement(t *testing.T) {
 		{
 			name:        "while statement no block",
 			program:     "while (true) 2 + 3;",
+			expectError: true,
+		},
+		{
+			name:     "for statement",
+			program:  "for (;;) {print 1;}",
+			expected: "for (; ; ) (block print 1.0;)",
+		},
+		{
+			name:     "for statement with initializer",
+			program:  "for (var a = 1;;) {print a;}",
+			expected: "for (var a = 1.0; ; ) (block print a;)",
+		},
+		{
+			name:     "for statement with condition",
+			program:  "for (; a < 3;) {print a;}",
+			expected: "for (; (< a 3.0); ) (block print a;)",
+		},
+		{
+			name:     "for statement with increment",
+			program:  "for (var a = 1; a < 3; a = a + 1) {print a;}",
+			expected: "for (var a = 1.0; (< a 3.0); (= a (+ a 1.0))) (block print a;)",
+		},
+		{
+			name:        "for statement no parens",
+			program:     "for var a = 1; a < 3; a = a + 1 {print a;}",
+			expectError: true,
+		},
+		{
+			name:        "for statement invalid initializer",
+			program:     "for (if (true) {print 1;}; a < 3; a = a + 1) {print a;}",
+			expectError: true,
+		},
+		{
+			name:        "for statement no semicolon after condition",
+			program:     "for (var a = 1; a < 3) {print a;}",
+			expectError: true,
+		},
+		{
+			name:        "for statement unclosed parens",
+			program:     "for (var a = 1; a < 3; a = a + 1 {print a;}",
+			expectError: true,
+		},
+		{
+			name:        "for statement no block statement",
+			program:     "for (var a = 1; a < 3; a = a + 1) print a;",
 			expectError: true,
 		},
 	}

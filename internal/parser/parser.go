@@ -65,6 +65,8 @@ func (p *parser) statement() (evaluator.Statement, *ParserError) {
 	switch {
 	case p.advanceMatch(lexer.TokenTypeVar):
 		return p.varStatement()
+	case p.advanceMatch(lexer.TokenTypeFor):
+		return p.forStatement()
 	case p.advanceMatch(lexer.TokenTypeIf):
 		return p.ifStatement()
 	case p.advanceMatch(lexer.TokenTypePrint):
@@ -99,6 +101,65 @@ func (p *parser) varStatement() (*evaluator.VarStatement, *ParserError) {
 	}
 
 	return varStmt, nil
+}
+
+// forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+//                  expression? ";"
+//                  expression? ")" blockStmt ;
+
+func (p *parser) forStatement() (*evaluator.ForStatement, *ParserError) {
+	if !p.advanceMatch(lexer.TokenTypeLeftParen) {
+		return nil, NewParserError("Expected '(' after 'for'")
+	}
+
+	var init evaluator.Statement
+	if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+		statement, err := p.statement()
+		if err != nil {
+			return nil, err
+		}
+		_, isExprStmt := statement.(*evaluator.ExpressionStatement)
+		_, isVarStmt := statement.(*evaluator.VarStatement)
+		if !isExprStmt && !isVarStmt {
+			return nil, NewParserError("Expected expression or variable declaration in for loop initializer")
+		}
+		init = statement
+	}
+
+	var condition evaluator.Expression
+	if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+		cond, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		condition = cond
+		if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+			return nil, NewParserError("Expected ';' after for condition")
+		}
+	}
+
+	var increment evaluator.Expression
+	if !p.advanceMatch(lexer.TokenTypeRightParen) {
+		inc, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		increment = inc
+		if !p.advanceMatch(lexer.TokenTypeRightParen) {
+			return nil, NewParserError("Expected ')' after for increment")
+		}
+	}
+
+	if !p.advanceMatch(lexer.TokenTypeLeftBrace) {
+		return nil, NewParserError("Expected '{' after for header")
+	}
+
+	body, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+
+	return &evaluator.ForStatement{Init: init, Condition: condition, Increment: increment, Body: body}, nil
 }
 
 // ifStmt         → "if" "(" expression ")" blockStmt
@@ -148,7 +209,7 @@ func (p *parser) printStatement() (*evaluator.PrintStatement, *ParserError) {
 	return &evaluator.PrintStatement{Expression: expr}, nil
 }
 
-// whileStmt      → "while" "(" expression ")" statement ;
+// whileStmt      → "while" "(" expression ")" blockStmt ;
 
 func (p *parser) whileStatement() (*evaluator.WhileStatement, *ParserError) {
 	if !p.advanceMatch(lexer.TokenTypeLeftParen) {
