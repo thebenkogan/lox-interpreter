@@ -63,6 +63,8 @@ func (p *parser) advanceMatch(types ...lexer.TokenType) bool {
 
 func (p *parser) statement() (evaluator.Statement, *ParserError) {
 	switch {
+	case p.advanceMatch(lexer.TokenTypeFun):
+		return p.funStatement()
 	case p.advanceMatch(lexer.TokenTypeVar):
 		return p.varStatement()
 	case p.advanceMatch(lexer.TokenTypeFor):
@@ -78,6 +80,44 @@ func (p *parser) statement() (evaluator.Statement, *ParserError) {
 	default:
 		return p.expressionStatement()
 	}
+}
+
+// funDecl        → "fun" function ;
+// function       → IDENTIFIER "(" parameters? ")" block ;
+// parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+
+func (p *parser) funStatement() (*evaluator.FunStatement, *ParserError) {
+	if !p.advanceMatch(lexer.TokenTypeIdentifier) {
+		return nil, NewParserError("Expected function name")
+	}
+	name := p.previous().Lexeme
+
+	if !p.advanceMatch(lexer.TokenTypeLeftParen) {
+		return nil, NewParserError("Expected '(' after function name")
+	}
+
+	params := make([]string, 0)
+	for p.advanceMatch(lexer.TokenTypeIdentifier) {
+		params = append(params, p.previous().Lexeme)
+		if !p.advanceMatch(lexer.TokenTypeComma) {
+			break
+		}
+	}
+
+	if !p.advanceMatch(lexer.TokenTypeRightParen) {
+		return nil, NewParserError("Expected ')' after function parameters")
+	}
+
+	if !p.advanceMatch(lexer.TokenTypeLeftBrace) {
+		return nil, NewParserError("Expected '{' after function parameters")
+	}
+
+	body, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+
+	return &evaluator.FunStatement{Name: name, Params: params, Body: body}, nil
 }
 
 // varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;

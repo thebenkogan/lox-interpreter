@@ -22,13 +22,13 @@ func (v *ValueLiteral) Bool() bool {
 }
 
 type ValueClosure struct {
-	Env    Environment
+	Env    *Environment
 	Body   *BlockStatement
 	Params []string
 }
 
 func (v *ValueClosure) String() string {
-	return "<closure>"
+	return "<function>"
 }
 
 func (v *ValueClosure) Bool() bool {

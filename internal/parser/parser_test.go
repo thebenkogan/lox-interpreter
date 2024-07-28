@@ -400,6 +400,31 @@ func TestParseStatement(t *testing.T) {
 			program:     "for (var a = 1; a < 3; a = a + 1) print a;",
 			expectError: true,
 		},
+		{
+			name:     "fun statement",
+			program:  "fun add(a, b) {print a + b;}",
+			expected: "fun add(a, b) (block print (+ a b);)",
+		},
+		{
+			name:     "fun statement no params",
+			program:  "fun add() {print 1 + 2;}",
+			expected: "fun add() (block print (+ 1.0 2.0);)",
+		},
+		{
+			name:        "fun statement no param parens",
+			program:     "fun add a,b {print a + b;}",
+			expectError: true,
+		},
+		{
+			name:        "fun statement no param unclosed parens",
+			program:     "fun add(a, b {print a + b;}",
+			expectError: true,
+		},
+		{
+			name:        "fun statement no block",
+			program:     "fun add(a, b) print a + b;",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

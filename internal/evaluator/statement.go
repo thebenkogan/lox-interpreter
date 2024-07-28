@@ -149,3 +149,9 @@ type FunStatement struct {
 func (e *FunStatement) String() string {
 	return fmt.Sprintf("fun %s(%s) %s", e.Name, strings.Join(e.Params, ", "), e.Body.String())
 }
+
+func (e *FunStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	closure := &ValueClosure{Env: env, Body: e.Body, Params: e.Params}
+	env.Declare(e.Name, closure)
+	return nil
+}

@@ -121,6 +121,11 @@ func TestExecuteStatements(t *testing.T) {
 			program:  "var a = 5; for (var a = 1; a < 3; a = a + 1) {print a;} print a;",
 			expected: "1\n2\n5\n",
 		},
+		{
+			name:     "fun statement",
+			program:  "fun add(a, b) {print a + b;} print add;",
+			expected: "<function>\n",
+		},
 	}
 
 	for _, test := range tests {
