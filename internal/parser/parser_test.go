@@ -465,6 +465,26 @@ func TestParseStatement(t *testing.T) {
 			program:     "fun add(a, b) print a + b;",
 			expectError: true,
 		},
+		{
+			name:     "return statement",
+			program:  "return 1 + 2;",
+			expected: "return (+ 1.0 2.0)",
+		},
+		{
+			name:     "return statement no expression",
+			program:  "return;",
+			expected: "return nil",
+		},
+		{
+			name:        "return statement no semicolon",
+			program:     "return 1 + 2",
+			expectError: true,
+		},
+		{
+			name:        "return statement no semicolon and no expression",
+			program:     "return",
+			expectError: true,
+		},
 	}
 
 	for _, test := range tests {

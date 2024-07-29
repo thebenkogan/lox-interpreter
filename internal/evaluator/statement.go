@@ -155,3 +155,30 @@ func (e *FunStatement) Execute(env *Environment, output io.Writer) *RuntimeError
 	env.Declare(e.Name, closure)
 	return nil
 }
+
+type ReturnStatement struct {
+	Expr Expression
+}
+
+func (e *ReturnStatement) String() string {
+	if e.Expr == nil {
+		return "return"
+	}
+	return fmt.Sprintf("return %s", e.Expr.String())
+}
+
+type ReturnError struct {
+	val Value
+}
+
+func (e *ReturnError) Error() string {
+	return e.val.String()
+}
+
+func (e *ReturnStatement) Execute(env *Environment, output io.Writer) *RuntimeError {
+	value, err := e.Expr.Evaluate(env, output)
+	if err != nil {
+		return err
+	}
+	return &RuntimeError{err: &ReturnError{val: value}}
+}

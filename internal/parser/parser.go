@@ -73,6 +73,8 @@ func (p *parser) statement() (evaluator.Statement, *ParserError) {
 		return p.ifStatement()
 	case p.advanceMatch(lexer.TokenTypePrint):
 		return p.printStatement()
+	case p.advanceMatch(lexer.TokenTypeReturn):
+		return p.returnStatement()
 	case p.advanceMatch(lexer.TokenTypeWhile):
 		return p.whileStatement()
 	case p.advanceMatch(lexer.TokenTypeLeftBrace):
@@ -260,6 +262,22 @@ func (p *parser) printStatement() (*evaluator.PrintStatement, *ParserError) {
 		return nil, NewParserError("Expected semicolon after print statement")
 	}
 	return &evaluator.PrintStatement{Expression: expr}, nil
+}
+
+// returnStmt     → "return" expression? ";" ;
+
+func (p *parser) returnStatement() (*evaluator.ReturnStatement, *ParserError) {
+	if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		if !p.advanceMatch(lexer.TokenTypeSemicolon) {
+			return nil, NewParserError("Expected semicolon after return statement")
+		}
+		return &evaluator.ReturnStatement{Expr: expr}, nil
+	}
+	return &evaluator.ReturnStatement{Expr: &evaluator.ExpressionLiteral{Literal: nil}}, nil
 }
 
 // whileStmt      → "while" "(" expression ")" blockStmt ;

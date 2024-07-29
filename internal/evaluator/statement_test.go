@@ -156,6 +156,21 @@ func TestExecuteStatements(t *testing.T) {
 			program:     "var add = 1; add();",
 			expectError: true,
 		},
+		{
+			name:     "fun call with no return is null",
+			program:  "fun add(a, b) {a + b;} print add(1, 2);",
+			expected: "<nil>\n",
+		},
+		{
+			name:     "fun call with empty return is null",
+			program:  "fun add(a, b) {a + b; return;} print add(1, 2);",
+			expected: "<nil>\n",
+		},
+		{
+			name:     "fun call with return is returned value",
+			program:  "fun add(a, b) {return a + b;} print add(1, 2);",
+			expected: "3\n",
+		},
 	}
 
 	for _, test := range tests {

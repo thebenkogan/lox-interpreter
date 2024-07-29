@@ -1,6 +1,9 @@
 package evaluator
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 
 func (e *ExpressionLiteral) Evaluate(env *Environment, output io.Writer) (Value, *RuntimeError) {
 	return &ValueLiteral{Literal: e.Literal}, nil
@@ -216,6 +219,10 @@ func (e *ExpressionCall) Evaluate(env *Environment, output io.Writer) (Value, *R
 	}
 
 	if err := function.Body.Execute(functionEnv, output); err != nil {
+		var returnErr *ReturnError
+		if errors.As(err.err, &returnErr) {
+			return returnErr.val, nil
+		}
 		return nil, err
 	}
 
