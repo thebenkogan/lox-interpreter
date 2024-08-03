@@ -209,13 +209,18 @@ func (e *ExpressionCall) Evaluate(env *Environment, output io.Writer) (Value, *R
 		args = append(args, argVal)
 	}
 
-	if len(args) != len(function.Params) {
+	if len(args) > len(function.Params) {
 		return nil, NewRuntimeError("Incorrect number of arguments.")
 	}
 
 	functionEnv := function.Env.CreateScope()
 	for i, arg := range args {
 		functionEnv.Declare(function.Params[i], arg)
+	}
+
+	if len(args) < len(function.Params) {
+		// partial application
+		return &ValueClosure{Env: functionEnv, Body: function.Body, Params: function.Params[len(args):]}, nil
 	}
 
 	if err := function.Body.Execute(functionEnv, output); err != nil {

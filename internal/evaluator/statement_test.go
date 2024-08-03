@@ -147,8 +147,8 @@ func TestExecuteStatements(t *testing.T) {
 			expected: "3\n7\n8\n",
 		},
 		{
-			name:        "fun call incorrect number of args",
-			program:     "fun add(a, b) {print a + b;} add(1);",
+			name:        "fun call too many args",
+			program:     "fun add(a, b) {print a + b;} add(1, 2, 3);",
 			expectError: true,
 		},
 		{
@@ -169,6 +169,16 @@ func TestExecuteStatements(t *testing.T) {
 		{
 			name:     "fun call with return is returned value",
 			program:  "fun add(a, b) {return a + b;} print add(1, 2);",
+			expected: "3\n",
+		},
+		{
+			name:     "fun call with partial application",
+			program:  "fun add(a, b) {return a + b;} print add(1);",
+			expected: "<function>\n",
+		},
+		{
+			name:     "fun call with partial application evaluates correctly",
+			program:  "fun add(a, b) {return a + b;} var add1 = add(1); print add1(2);",
 			expected: "3\n",
 		},
 	}
